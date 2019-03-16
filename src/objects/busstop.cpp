@@ -19,3 +19,7 @@ double CalcDistance(Location from, Location to) {
 bool operator<(const BusStop& lhs, const BusStop& rhs) {
   return lhs.GetName() < rhs.GetName();
 }
+
+bool operator==(const BusStop& lhs, const BusStop& rhs) {
+  return lhs.GetName() == rhs.GetName();
+}

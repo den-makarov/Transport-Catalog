@@ -73,7 +73,7 @@ vector<Request::RequestHolder> ReadRequests(bool input, istream& in_stream = cin
 void ProcessInputRequests(const vector<Request::RequestHolder>& requests, 
                           BusStopMap& map) {
   for (const auto& request : requests) {
-     request.Process(map);
+     request->Process(map);
   }
 //    if (request_holder->type == Request::Type::COMPUTE_INCOME) {
 //      const auto& request = static_cast<const ComputeIncomeRequest&>(*request_holder);

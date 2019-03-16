@@ -2,6 +2,7 @@
 #define BUSSTOPMAP_H
 
 #include <unordered_set>
+#include <unordered_map>
 #include <list>
 
 #include "busstop.h"

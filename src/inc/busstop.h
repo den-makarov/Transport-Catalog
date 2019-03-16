@@ -37,6 +37,7 @@ private:
 };
 
 bool operator<(const BusStop& lhs, const BusStop& rhs);
+bool operator==(const BusStop& lhs, const BusStop& rhs);
 double CalcDistance(Location from, Location to);
 
 struct BusStopHasher {
