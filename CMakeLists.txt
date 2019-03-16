@@ -11,7 +11,7 @@ message ("RELEASE_BUILD: ${RELEASE_BUILD}")
 # set (CMAKE_CXX_FLAGS_INIT "${ARCH_FLAGS}")
 # set (CMAKE_EXE_LINKER_FLAGS_INIT "${ARCH_FLAGS} -lc -T${CMAKE_SOURCE_DIR}/linker_script.ld -Wl,--gc-sections")
 
-# generic embedded target
+# generic target
 set (CMAKE_SYSTEM_NAME Generic)
 project (Transport-Catalog-A C CXX)
 
@@ -34,8 +34,8 @@ add_compile_options(-std=c++1z)
 
 # source dirs
 set (APP_DIR   src)
-#set (LIB_DIR   src/lib)
-#set (OBJ_DIR   src/objects)
+set (LIB_DIR   src/lib)
+set (OBJ_DIR   src/objects)
 
 # include dirs
 include_directories(
@@ -48,23 +48,24 @@ add_library(app_lib OBJECT
 )
 
 # additional library source files
-#add_library(sub_lib OBJECT
-#    ${LIB_DIR}/stringparse.cpp
-#    ${LIB_DIR}/request.cpp
-#)
+add_library(sub_lib OBJECT
+    ${LIB_DIR}/stringparser.cpp
+    ${LIB_DIR}/request.cpp
+)
 
 # objects source files
-#add_library(obj_lib OBJECT
-#    ${OBJ_DIR}/bus.cpp
-#    ${OBJ_DIR}/busstop.cpp
-#    ${OBJ_DIR}/route.cpp
-#)
+add_library(obj_lib OBJECT
+    ${OBJ_DIR}/bus.cpp
+    ${OBJ_DIR}/busstop.cpp
+    ${OBJ_DIR}/BusRoute.cpp
+    ${OBJ_DIR}/BusStopMap.cpp
+)
 
 # executable
 add_executable(${TARGET_NAME}
     $<TARGET_OBJECTS:app_lib>
-#    $<TARGET_OBJECTS:sub_lib>
-#    $<TARGET_OBJECTS:obj_lib>
+    $<TARGET_OBJECTS:sub_lib>
+    $<TARGET_OBJECTS:obj_lib>
 )
 
 # post build commands

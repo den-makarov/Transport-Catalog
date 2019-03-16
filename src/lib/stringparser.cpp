@@ -33,3 +33,15 @@ int ConvertToInt(string_view str) {
   }
   return result;
 }
+
+double ConvertToDouble(string_view str) {
+  // use std::from_chars when available to git rid of string copy
+  size_t pos;
+  const double result = stod(string(str), &pos);
+  if (pos != str.length()) {
+    ostringstream error;
+    error << "string " << str << " contains " << (str.length() - pos) << " trailing chars";
+    throw invalid_argument(error.str());
+  }
+  return result;
+}

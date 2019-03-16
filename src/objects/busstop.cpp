@@ -15,3 +15,7 @@ double CalcDistance(Location from, Location to) {
                     cos(lonA - lonB) ) * 180 / GEO_PI;
   return arc * EARTH_RADIUS;
 }
+
+bool operator<(const BusStop& lhs, const BusStop& rhs) {
+  return lhs.GetName() < rhs.GetName();
+}

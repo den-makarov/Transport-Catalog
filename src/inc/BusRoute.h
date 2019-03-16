@@ -1,5 +1,5 @@
-#ifndef ROUTE_H
-#define ROUTE_H
+#ifndef BUS_ROUTE_H
+#define BUS_ROUTE_H
 
 #include "busstop.h"
 
@@ -10,22 +10,17 @@
 #include <optional>
 #include <iostream>
 
-class Route
+class BusRoute
 {
 public:
-  Route(bool direction, size_t identifier)
+  BusRoute(bool direction)
     : one_direction(direction)
-    , id(identifier)
   {}
 
-  Route& AddStop(BusStop stop) {
+  BusRoute& AddStop(BusStop stop) {
     auto it = stops.insert(std::move(stop));
     route.push_back(it.first);
     return *this;
-  }
-
-  size_t GetId() const {
-    return id;
   }
 
   std::optional<BusStop> GetStop(const std::string& name) const {
@@ -50,11 +45,10 @@ public:
   }
 private:
   bool one_direction;
-  std::size_t id;
   std::set<BusStop> stops;
   double length;
   using BusStopId = std::set<BusStop>::iterator;
   std::vector<BusStopId> route;
 };
 
-#endif // ROUTE_H
+#endif // BUS_ROUTE_H

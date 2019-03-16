@@ -14,6 +14,8 @@ std::string_view ReadToken(std::string_view& s, std::string_view delimiter = " "
 
 int ConvertToInt(std::string_view str);
 
+double ConvertToDouble(std::string_view str);
+
 template <typename Number>
 void ValidateBounds(Number number_to_check, Number min_value, Number max_value) {
   if (number_to_check < min_value || number_to_check > max_value) {
