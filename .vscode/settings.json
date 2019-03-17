@@ -32,7 +32,9 @@
     "tuple": "cpp",
     "typeinfo": "cpp",
     "utility": "cpp",
-    "string": "cpp"
+    "string": "cpp",
+    "list": "cpp",
+    "unordered_set": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled"
 }

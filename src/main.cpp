@@ -72,36 +72,24 @@ vector<Request::RequestHolder> ReadRequests(bool input, istream& in_stream = cin
 
 void ProcessInputRequests(const vector<Request::RequestHolder>& requests, 
                           BusStopMap& map) {
-  for (const auto& request : requests) {
-     request->Process(map);
+  for (const auto& request_holder : requests) {
+    const auto& request = static_cast<const ModifyRequest&>(*request_holder);
+    request.Process(map);
   }
-//    if (request_holder->type == Request::Type::COMPUTE_INCOME) {
-//      const auto& request = static_cast<const ComputeIncomeRequest&>(*request_holder);
-//      responses.push_back(request.Process(manager));
-//    } else {
-//      const auto& request = static_cast<const ModifyRequest&>(*request_holder);
-//      request.Process(manager);
-//    }
 }
 
-vector<double> ProcessOutputRequests(const vector<Request::RequestHolder>& requests,
-                                     BusStopMap& map) {
-  vector<double> responses;
-//  BusStopMap stops(0);
-//  for (const auto& request_holder : requests) {
-//    if (request_holder->type == Request::Type::COMPUTE_INCOME) {
-//      const auto& request = static_cast<const ComputeIncomeRequest&>(*request_holder);
-//      responses.push_back(request.Process(manager));
-//    } else {
-//      const auto& request = static_cast<const ModifyRequest&>(*request_holder);
-//      request.Process(manager);
-//    }
-//  }
+vector<string> ProcessOutputRequests(const vector<Request::RequestHolder>& requests,
+                                     const BusStopMap& map) {
+  vector<string> responses;
+  for (const auto& request_holder : requests) {
+    const auto& request = static_cast<const BusInfoRequest&>(*request_holder);
+    responses.push_back(request.Process(map));
+  }
   return responses;
 }
 
-void PrintResponses(const vector<double>& responses, ostream& stream = cout) {
-  for (const double response : responses) {
+void PrintResponses(const vector<string>& responses, ostream& stream = cout) {
+  for (const auto& response : responses) {
     stream << response << endl;
   }
 }

@@ -4,7 +4,7 @@
 #include "busstop.h"
 
 #include <cstdint>
-#include <set>
+#include <unordered_set>
 #include <vector>
 #include <utility>
 #include <optional>
@@ -13,14 +13,21 @@
 class BusRoute
 {
 public:
+  using BusStopId = std::unordered_set<BusStop, BusStopHasher>::iterator;
+
+  struct RouteParams {
+    size_t stops;
+    size_t unique_stops;
+    double length;
+  };
+
   BusRoute(bool direction)
     : one_direction(direction)
   {}
 
-  BusRoute& AddStop(BusStop stop) {
+  void AddStop(BusStop stop) {
     auto it = stops.insert(std::move(stop));
     route.push_back(it.first);
-    return *this;
   }
 
   std::optional<BusStop> GetStop(const std::string& name) const {
@@ -43,11 +50,30 @@ public:
       }
     }
   }
+
+  RouteParams GetRouteParams() const {
+    RouteParams params;
+
+    params.unique_stops = stops.size();
+
+    if(one_direction) {
+      params.stops = route.size();
+    } else {
+      params.stops = route.size() * 2 + 1;
+    }
+
+    params.length = 0.0;
+
+    return params;
+  }
+
+  bool IsOneDirection() const {
+    return one_direction;
+  }
 private:
   bool one_direction;
-  std::set<BusStop> stops;
+  std::unordered_set<BusStop, BusStopHasher> stops;
   double length;
-  using BusStopId = std::set<BusStop>::iterator;
   std::vector<BusStopId> route;
 };
 

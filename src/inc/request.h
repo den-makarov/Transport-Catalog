@@ -23,19 +23,45 @@ public:
 
   static RequestHolder Create(Type type);
   virtual void ParseFrom(std::string_view input) = 0;
-  virtual void Process(BusStopMap& map) const = 0;
   virtual ~Request() = default;
 
   const Type type;
 };
 
-class RouteDefRequest : public Request {
+template <typename ResultType>
+class PrintRequest : public Request {
 public:
-  RouteDefRequest() : Request(Type::ROUTE_DEFINITION) {}
+  using Request::Request;
+  virtual ResultType Process(const BusStopMap& map) const = 0;
+  virtual ~PrintRequest() = default;
+};
+
+class ModifyRequest : public Request {
+public:
+  using Request::Request;
+  virtual void Process(BusStopMap& map) const = 0;
+  virtual ~ModifyRequest() = default;
+};
+
+class RouteDefRequest : public ModifyRequest {
+public:
+  RouteDefRequest()
+  : ModifyRequest(Type::ROUTE_DEFINITION)
+  {}
+
   void ParseFrom(std::string_view input) override;
 
   void Process(BusStopMap& map) const override {
-
+    Bus new_bus(bus_name);
+    BusRoute new_route(one_direction);
+    for(const auto& stop_name : bus_stops_name) {
+      auto stop_id = map.GetStopByName(stop_name);
+      if(stop_id) {
+        BusStop stop(*(stop_id.value()));
+        new_route.AddStop(std::move(stop));
+      }
+    }
+    map.AddBus(std::move(new_bus), std::move(new_route));
   }
 private:
   std::string bus_name;
@@ -43,9 +69,12 @@ private:
   bool one_direction;
 };
 
-class StopDeclRequest : public Request {
+class StopDeclRequest : public ModifyRequest {
 public:
-  StopDeclRequest() : Request(Type::STOP_DECLARATION) {}
+  StopDeclRequest()
+  : ModifyRequest(Type::STOP_DECLARATION)
+  {}
+
   void ParseFrom(std::string_view input) override;
 
   void Process(BusStopMap& map) const override {
@@ -56,13 +85,28 @@ private:
   Location geo;
 };
 
-class BusInfoRequest : public Request {
+class BusInfoRequest : public PrintRequest<std::string> {
 public:
-  BusInfoRequest() : Request(Type::BUS_INFO) {}
+  BusInfoRequest()
+  : PrintRequest(Type::BUS_INFO)
+  {}
+
   void ParseFrom(std::string_view input) override;
 
-  void Process(BusStopMap& map) const override {
-
+  std::string Process(const BusStopMap& map) const override {
+    std::ostringstream result;
+    result << "Bus " << bus_name << ": ";
+    auto route_id = map.GetRouteByBus(bus_name);
+    if(route_id) {
+      const auto& route = route_id.value()->second;
+      auto params = route.GetRouteParams();
+      result << params.stops << " stops on route, ";
+      result << params.unique_stops << " unique stops, ";
+      result << params.length << " route length\n";
+    } else {
+      result << "not found\n";
+    }
+    return result.str();
   }
 private:
   std::string bus_name;
