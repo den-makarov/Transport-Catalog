@@ -74,7 +74,16 @@ void ProcessInputRequests(const vector<Request::RequestHolder>& requests,
                           BusStopMap& map) {
   for (const auto& request_holder : requests) {
     const auto& request = static_cast<const ModifyRequest&>(*request_holder);
-    request.Process(map);
+    if(request.type == Request::Type::STOP_DECLARATION) {
+      request.Process(map);
+    }
+  }
+
+  for (const auto& request_holder : requests) {
+    const auto& request = static_cast<const ModifyRequest&>(*request_holder);
+    if(request.type == Request::Type::ROUTE_DEFINITION) {
+      request.Process(map);
+    }
   }
 }
 

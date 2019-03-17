@@ -11,6 +11,11 @@ pair<string_view, optional<string_view>> SplitTwoStrict(string_view s, string_vi
   }
 }
 
+bool IsContent(string_view s, string_view delimiter) {
+  const size_t pos = s.find(delimiter);
+  return pos == s.npos ? false : true;
+}
+
 pair<string_view, string_view> SplitTwo(string_view s, string_view delimiter) {
   const auto [lhs, rhs_opt] = SplitTwoStrict(s, delimiter);
   return {lhs, rhs_opt.value_or("")};

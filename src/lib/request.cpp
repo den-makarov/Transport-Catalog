@@ -16,21 +16,27 @@ Request::RequestHolder Request::Create(Request::Type type) {
 
 void RouteDefRequest::ParseFrom(std::string_view input) {
   bus_name = string(ReadToken(input, ": "));
-  bus_stops_name.push_back(string(ReadToken(input)));
+  // std::cout << "Bus " << bus_name << ":_";
   
-  if(input.size() > 3) {
-    if(input[0] == '>') {
-      one_direction = true;
-      while(input.size()) {
-        bus_stops_name.push_back(string(ReadToken(input, "> ")));
-      }
-    } else {
-      one_direction = false;
-      while(input.size()) {
-        bus_stops_name.push_back(string(ReadToken(input, "- ")));
-      }
+  if(IsContent(input, " > ")) {
+    one_direction = true;
+    while(input.size()) {
+      bus_stops_name.push_back(string(ReadToken(input, " > ")));
+      // std::cout << bus_stops_name.back() << "_";
+    }
+  } else {
+    one_direction = false;
+    while(input.size()) {
+      bus_stops_name.push_back(string(ReadToken(input, " - ")));
+      // std::cout << bus_stops_name.back() << "_";
     }
   }
+
+  // if(one_direction) {
+  //   std::cout << "One Direction. Stops " << bus_stops_name.size() << "\n";
+  // } else {
+  //   std::cout << "Back to Back. Stops " << bus_stops_name.size() << "\n";
+  // }
 }
 
 void StopDeclRequest::ParseFrom(std::string_view input) {

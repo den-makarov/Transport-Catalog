@@ -27,6 +27,13 @@ public:
 
   void AddStop(BusStop stop) {
     auto it = stops.insert(std::move(stop));
+    if(route.size() == 0) {
+      length = 0.0;
+    } else {
+      auto point1 = route.back()->GetLocation();
+      auto point2 = it.first->GetLocation();
+      length += CalcDistance(point1, point2);
+    }
     route.push_back(it.first);
   }
 
@@ -59,10 +66,10 @@ public:
     if(one_direction) {
       params.stops = route.size();
     } else {
-      params.stops = route.size() * 2 + 1;
+      params.stops = (route.size() - 1) * 2 + 1;
     }
 
-    params.length = 0.0;
+    params.length = length;
 
     return params;
   }

@@ -13,6 +13,8 @@ std::pair<std::string_view, std::string_view> SplitTwo(std::string_view s,
                                                        std::string_view delimiter = " ");
 std::string_view ReadToken(std::string_view& s, std::string_view delimiter = " ");
 
+bool IsContent(std::string_view s, std::string_view delimiter = " ");
+
 int ConvertToInt(std::string_view str);
 
 double ConvertToDouble(std::string_view str);
