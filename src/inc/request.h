@@ -102,9 +102,9 @@ public:
       auto params = route.GetRouteParams();
       result << params.stops << " stops on route, ";
       result << params.unique_stops << " unique stops, ";
-      result << params.length << " route length\n";
+      result << params.length << " route length";
     } else {
-      result << "not found\n";
+      result << "not found";
     }
     return result.str();
   }
