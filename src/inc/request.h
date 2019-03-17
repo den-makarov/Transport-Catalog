@@ -93,21 +93,7 @@ public:
 
   void ParseFrom(std::string_view input) override;
 
-  std::string Process(const BusStopMap& map) const override {
-    std::ostringstream result;
-    result << "Bus " << bus_name << ": ";
-    auto route_id = map.GetRouteByBus(bus_name);
-    if(route_id) {
-      const auto& route = route_id.value()->second;
-      auto params = route.GetRouteParams();
-      result << params.stops << " stops on route, ";
-      result << params.unique_stops << " unique stops, ";
-      result << params.length << " route length";
-    } else {
-      result << "not found";
-    }
-    return result.str();
-  }
+  std::string Process(const BusStopMap& map) const override;
 private:
   std::string bus_name;
 };

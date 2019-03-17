@@ -65,11 +65,11 @@ public:
 
     if(one_direction) {
       params.stops = route.size();
+      params.length = length;
     } else {
       params.stops = (route.size() - 1) * 2 + 1;
+      params.length = length * 2.0;
     }
-
-    params.length = length;
 
     return params;
   }
