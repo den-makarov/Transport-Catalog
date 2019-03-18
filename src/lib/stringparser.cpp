@@ -2,6 +2,16 @@
 
 using namespace std;
 
+string_view Strip(string_view s) {
+  while (!s.empty() && isspace(s.front())) {
+    s.remove_prefix(1);
+  }
+  while (!s.empty() && isspace(s.back())) {
+    s.remove_suffix(1);
+  }
+  return s;
+}
+
 pair<string_view, optional<string_view>> SplitTwoStrict(string_view s, string_view delimiter) {
   const size_t pos = s.find(delimiter);
   if (pos == s.npos) {
@@ -24,7 +34,7 @@ pair<string_view, string_view> SplitTwo(string_view s, string_view delimiter) {
 string_view ReadToken(string_view& s, string_view delimiter) {
   const auto [lhs, rhs] = SplitTwo(s, delimiter);
   s = rhs;
-  return lhs;
+  return Strip(lhs);
 }
 
 int ConvertToInt(string_view str) {

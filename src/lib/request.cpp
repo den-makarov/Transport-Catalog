@@ -50,7 +50,7 @@ void StopDeclRequest::ParseFrom(string_view input) {
 }
 
 void BusInfoRequest::ParseFrom(string_view input) {
-  bus_name = string(ReadToken(input));
+  bus_name = string(ReadToken(input, "*"));
 }
 
 string BusInfoRequest::Process(const BusStopMap& map) const {

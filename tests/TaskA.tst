@@ -11,9 +11,13 @@ Stop Biryulyovo Tovarnaya: 55.592028, 37.653656
 Stop Biryulyovo Passazhirskaya: 55.580999, 37.659164
 Bus lw 5PH6: Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye
 Bus  lw5PH8 : Biryulyovo Zapadnoye - Biryusinka - Universam - Biryulyovo Tovarnaya - Biryulyovo Passazhirskaya - Biryulyovo Zapadnoye
-6
+10
 Bus 256
 Bus 750
+Bus 750  
+Bus   750
+Bus   750   
+Bus   750   a  
 Bus  751  
 Bus lw 5PH6
 Bus lw5PH6
