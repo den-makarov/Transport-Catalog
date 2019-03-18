@@ -1,7 +1,7 @@
 #ifndef BUSSTOPMAP_H
 #define BUSSTOPMAP_H
 
-#include <unordered_set>
+#include <set>
 #include <unordered_map>
 #include <optional>
 
@@ -12,25 +12,41 @@
 class BusStopMap
 {
 public:
+  using StopBoard = std::set<Bus> *;
   using RouteId = std::unordered_map<Bus, BusRoute, BusHasher>::iterator;
   using ConstRouteId = std::unordered_map<Bus, BusRoute, BusHasher>::const_iterator;
 
   BusStopMap() {}
-  BusRoute::BusStopId AddStop(const BusStop& new_stop) {
-    return stops.insert(new_stop).first;
+
+  void AddStop(const BusStop& new_stop) {
+    stops.insert({new_stop, {}});
   }
 
   void AddBus(const Bus& new_bus, const BusRoute& new_route) {
     buses.insert({new_bus, new_route});
+    const auto & route = new_route.GetStopsOnRoute();
+    for(const auto & stop : route) {
+      stops.at(*stop).insert(new_bus);
+    }
   }
 
-  std::optional<BusRoute::BusStopId> GetStopByName(const std::string& stop_name) {
+  std::optional<BusStop> GetStopByName(const std::string& stop_name) const {
     BusStop dummy({stop_name, {0.0, 0.0}});
     auto it = stops.find(dummy);
     if(it != stops.end()) {
-      return {it};
+      return {it->first};
     } else {
       return {std::nullopt}; 
+    }
+  }
+
+  std::optional<const std::set<Bus>*> GetStopBoardByName(const std::string& stop_name) const {
+    BusStop dummy({stop_name, {0.0, 0.0}});
+    auto it = stops.find(dummy);
+    if(it != stops.end()) {
+      return {&(it->second)};
+    } else {
+      return {std::nullopt};
     }
   }
 
@@ -45,7 +61,7 @@ public:
   }
 
 private:
-  std::unordered_set<BusStop, BusStopHasher> stops;
+  std::unordered_map<BusStop, std::set<Bus>, BusStopHasher> stops;
   std::unordered_map<Bus, BusRoute, BusHasher> buses;
 };
 

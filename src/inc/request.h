@@ -16,7 +16,8 @@ public:
   enum class Type {
     STOP_DECLARATION,
     ROUTE_DEFINITION,
-    BUS_INFO
+    BUS_INFO,
+    STOP_INFO
   };
 
   Request(Type t) : type(t) {}
@@ -50,19 +51,7 @@ public:
   {}
 
   void ParseFrom(std::string_view input) override;
-
-  void Process(BusStopMap& map) const override {
-    Bus new_bus(bus_name);
-    BusRoute new_route(one_direction);
-    for(const auto& stop_name : bus_stops_name) {
-      auto stop_id = map.GetStopByName(stop_name);
-      if(stop_id) {
-        BusStop stop(*(stop_id.value()));
-        new_route.AddStop(std::move(stop));
-      }
-    }
-    map.AddBus(std::move(new_bus), std::move(new_route));
-  }
+  void Process(BusStopMap& map) const override;
 private:
   std::string bus_name;
   std::vector<std::string> bus_stops_name;
@@ -76,7 +65,6 @@ public:
   {}
 
   void ParseFrom(std::string_view input) override;
-
   void Process(BusStopMap& map) const override {
     map.AddStop({stop_name, geo});
   }
@@ -91,11 +79,26 @@ public:
   : PrintRequest(Type::BUS_INFO)
   {}
 
-  void ParseFrom(std::string_view input) override;
-
+  void ParseFrom(std::string_view input) override {
+    bus_name = std::string(ReadToken(input, "*"));
+  }
   std::string Process(const BusStopMap& map) const override;
 private:
   std::string bus_name;
+};
+
+class StopInfoRequest : public PrintRequest<std::string> {
+public:
+  StopInfoRequest()
+  : PrintRequest(Type::STOP_INFO)
+  {}
+
+  void ParseFrom(std::string_view input) override {
+    stop_name = std::string(ReadToken(input, "*"));
+  }
+  std::string Process(const BusStopMap& map) const override;
+private:
+  std::string stop_name;
 };
 
 #endif // REQUEST_H

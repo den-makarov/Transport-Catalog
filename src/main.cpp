@@ -18,12 +18,13 @@ Number ReadQueriesCount(istream& stream) {
 }
 
 const unordered_map<string_view, Request::Type> STR_TO_INPUT_REQUEST_TYPE = {
-    {"Stop", Request::Type::STOP_DECLARATION},
-    {"Bus", Request::Type::ROUTE_DEFINITION}
+  {"Stop", Request::Type::STOP_DECLARATION},
+  {"Bus", Request::Type::ROUTE_DEFINITION}
 };
 
 const unordered_map<string_view, Request::Type> STR_TO_OUTPUT_REQUEST_TYPE = {
-    {"Bus", Request::Type::BUS_INFO}
+  {"Bus", Request::Type::BUS_INFO},
+  {"Stop", Request::Type::STOP_INFO}
 };
 
 optional<Request::Type> ConvertRequestTypeFromString(string_view type_str, bool input) {
@@ -91,7 +92,7 @@ vector<string> ProcessOutputRequests(const vector<Request::RequestHolder>& reque
                                      const BusStopMap& map) {
   vector<string> responses;
   for (const auto& request_holder : requests) {
-    const auto& request = static_cast<const BusInfoRequest&>(*request_holder);
+    const auto& request = static_cast<const PrintRequest<string>&>(*request_holder);
     responses.push_back(request.Process(map));
   }
   return responses;

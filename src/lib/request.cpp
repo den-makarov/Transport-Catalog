@@ -12,8 +12,23 @@ Request::RequestHolder Request::Create(Request::Type type) {
     return make_unique<StopDeclRequest>();
   case Type::BUS_INFO:
     return make_unique<BusInfoRequest>();
+  case Type::STOP_INFO:
+    return make_unique<StopInfoRequest>();
   }
   return {nullptr};
+}
+
+void RouteDefRequest::Process(BusStopMap& map) const {
+  Bus new_bus(bus_name);
+  BusRoute new_route(one_direction);
+  for(const auto& stop_name : bus_stops_name) {
+    auto stop_id = map.GetStopByName(stop_name);
+    if(stop_id) {
+      BusStop stop(stop_id.value());
+      new_route.AddStop(std::move(stop));
+    }
+  }
+  map.AddBus(move(new_bus), move(new_route));
 }
 
 void RouteDefRequest::ParseFrom(string_view input) {
@@ -49,10 +64,6 @@ void StopDeclRequest::ParseFrom(string_view input) {
 //  cout << setprecision(8) << geo.latidute << " :: " << geo.longitude << "\n";
 }
 
-void BusInfoRequest::ParseFrom(string_view input) {
-  bus_name = string(ReadToken(input, "*"));
-}
-
 string BusInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
   result << "Bus " << bus_name << ": ";
@@ -63,6 +74,26 @@ string BusInfoRequest::Process(const BusStopMap& map) const {
     result << params.stops << " stops on route, ";
     result << params.unique_stops << " unique stops, ";
     result << setprecision(8) << params.length << " route length";
+  } else {
+    result << "not found";
+  }
+  return result.str();
+}
+
+string StopInfoRequest::Process(const BusStopMap& map) const {
+  ostringstream result;
+  result << "Stop " << stop_name << ": ";
+  auto board_id = map.GetStopBoardByName(stop_name);
+  if(board_id) {
+    const auto board = board_id.value();
+    if(board->size()) {
+      result << "buses";
+      for(const auto & bus : *board) {
+        result << " " << bus.GetNumber();
+      }
+    } else {
+      result << "no buses";
+    }
   } else {
     result << "not found";
   }

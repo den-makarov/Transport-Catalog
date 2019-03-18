@@ -1,14 +1,17 @@
 #ifndef BUS_ROUTE_H
 #define BUS_ROUTE_H
 
-#include "busstop.h"
-
 #include <cstdint>
 #include <unordered_set>
+#include <set>
+#include <unordered_map>
 #include <vector>
 #include <utility>
 #include <optional>
 #include <iostream>
+
+#include "busstop.h"
+#include "bus.h"
 
 class BusRoute
 {
@@ -45,6 +48,10 @@ public:
     } else {
       return {std::nullopt};
     }
+  }
+
+  const std::vector<BusStopId>& GetStopsOnRoute() const {
+    return route;
   }
 
   void PrintRoute(std::ostream& out) const {
