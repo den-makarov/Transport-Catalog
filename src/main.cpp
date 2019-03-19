@@ -71,17 +71,17 @@ vector<Request::RequestHolder> ReadRequests(bool input, istream& in_stream = cin
   return requests;
 }
 
-void ProcessInputRequests(const vector<Request::RequestHolder>& requests, 
+void ProcessInputRequests(vector<Request::RequestHolder>& requests,
                           BusStopMap& map) {
-  for (const auto& request_holder : requests) {
-    const auto& request = static_cast<const ModifyRequest&>(*request_holder);
+  for (auto& request_holder : requests) {
+    auto& request = static_cast<ModifyRequest&>(*request_holder);
     if(request.type == Request::Type::STOP_DECLARATION) {
       request.Process(map);
     }
   }
 
-  for (const auto& request_holder : requests) {
-    const auto& request = static_cast<const ModifyRequest&>(*request_holder);
+  for (auto& request_holder : requests) {
+    auto& request = static_cast<ModifyRequest&>(*request_holder);
     if(request.type == Request::Type::ROUTE_DEFINITION) {
       request.Process(map);
     }
@@ -110,7 +110,7 @@ void PrintResponses(const vector<string>& responses, ostream& stream = cout) {
 int main() {
   BusStopMap map;
 
-  const auto input_requests = ReadRequests(INPUT_REQUEST);
+  auto input_requests = ReadRequests(INPUT_REQUEST);
   ProcessInputRequests(input_requests, map);
   
   const auto output_requests = ReadRequests(OUTPUT_REQUEST);

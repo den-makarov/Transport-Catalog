@@ -1,5 +1,5 @@
 13
-Stop Tolstopaltsevo: 55.611087, 37.20829, 3900m to Marushkino
+Stop Tolstopaltsevo: 55.611087, 37.20829, 4901000m to Marushkino
 Stop Marushkino: 55.595884, 37.209755, 9900m to Rasskazovka
 Bus 256: Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye
 Bus 750: Tolstopaltsevo - Marushkino - Rasskazovka

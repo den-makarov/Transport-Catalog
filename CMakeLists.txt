@@ -23,13 +23,13 @@ set (TARGET_NAME application)
 # add_definitions(-DSOMETHING_TO_DEFINE)
 
 # additional compilation flags
-# if (RELEASE_BUILD)
-#    add_compile_options(-Os -g0)
+ if (RELEASE_BUILD)
+    add_compile_options(-Os -g0)
 #    set (TARGET_NAME ${TARGET_NAME}-release)
-# else ()
-#    add_compile_options(-O0 -g3)
+ else ()
+    add_compile_options(-O0 -g3)
 #    set (TARGET_NAME ${TARGET_NAME}-debug)
-# endif (RELEASE_BUILD)
+ endif (RELEASE_BUILD)
 add_compile_options(-std=c++1z)
 
 # source dirs

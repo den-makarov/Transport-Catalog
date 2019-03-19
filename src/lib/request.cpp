@@ -18,7 +18,7 @@ Request::RequestHolder Request::Create(Request::Type type) {
   return {nullptr};
 }
 
-void RouteDefRequest::Process(BusStopMap& map) const {
+void RouteDefRequest::Process(BusStopMap& map) {
   Bus new_bus(bus_name);
   BusRoute new_route(one_direction);
   for(const auto& stop_name : bus_stops_name) {
@@ -58,9 +58,19 @@ void RouteDefRequest::ParseFrom(string_view input) {
 
 void StopDeclRequest::ParseFrom(string_view input) {
   stop_name = string(ReadToken(input, ": "));
+
   double latitude = stod(string(ReadToken(input, ", ")));
-  double longitude = ConvertToDouble(input);
+  double longitude = stod(string(ReadToken(input, ", ")));
   geo = {longitude, latitude};
+
+  if(!distances) {
+    distances = BusStop::DistanceSet(new map<string, unsigned long>({}));
+  }
+  while(input.size()) {
+    unsigned long distance = stoul(string(ReadToken(input, "m to ")));
+    string stop(ReadToken(input, ", "));
+    distances->insert({stop, distance});
+  }
 //  cout << setprecision(8) << geo.latidute << " :: " << geo.longitude << "\n";
 }
 
@@ -73,7 +83,8 @@ string BusInfoRequest::Process(const BusStopMap& map) const {
     auto params = route.GetRouteParams();
     result << params.stops << " stops on route, ";
     result << params.unique_stops << " unique stops, ";
-    result << setprecision(8) << params.length << " route length";
+    result << fixed << setprecision(0) << params.distance << " route length, ";
+    result << setprecision(8) << params.distance / params.geo_length << " curvature";
   } else {
     result << "not found";
   }

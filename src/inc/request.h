@@ -6,6 +6,7 @@
 #include "BusRoute.h"
 #include "BusStopMap.h"
 
+#include <utility>
 #include <memory>
 
 class Request
@@ -40,7 +41,7 @@ public:
 class ModifyRequest : public Request {
 public:
   using Request::Request;
-  virtual void Process(BusStopMap& map) const = 0;
+  virtual void Process(BusStopMap& map) = 0;
   virtual ~ModifyRequest() = default;
 };
 
@@ -51,7 +52,7 @@ public:
   {}
 
   void ParseFrom(std::string_view input) override;
-  void Process(BusStopMap& map) const override;
+  void Process(BusStopMap& map) override;
 private:
   std::string bus_name;
   std::vector<std::string> bus_stops_name;
@@ -65,12 +66,15 @@ public:
   {}
 
   void ParseFrom(std::string_view input) override;
-  void Process(BusStopMap& map) const override {
-    map.AddStop({stop_name, geo});
+  void Process(BusStopMap& map) override {
+    BusStop stop({stop_name, geo});
+    stop.AddDistanceInfo(distances);
+    map.AddStop(std::move(stop));
   }
 private:
   std::string stop_name;
   Location geo;
+  BusStop::DistanceSet distances;
 };
 
 class BusInfoRequest : public PrintRequest<std::string> {
