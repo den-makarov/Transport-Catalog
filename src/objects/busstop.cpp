@@ -14,7 +14,7 @@ double CalcDistance(Location from, Location to) {
 
   double arc = acos(sin(latA) * sin(latB) +
                     cos(latA) * cos(latB) *
-                    cos(lonA - lonB));
+                    cos(abs(lonA - lonB)));
   return arc * EARTH_RADIUS;
 }
 
