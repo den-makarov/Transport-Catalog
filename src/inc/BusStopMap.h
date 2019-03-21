@@ -22,9 +22,10 @@ public:
     stops.insert({new_stop, {}});
   }
 
-  void AddBus(const Bus& new_bus, const BusRoute& new_route) {
-    buses.insert({new_bus, new_route});
-    const auto & route = new_route.GetStopsOnRoute();
+  void AddBus(const Bus& new_bus, BusRoute new_route) {
+    auto it = buses.insert(std::pair<const Bus, BusRoute>(new_bus, BusRoute(true)));
+    it.first->second = std::move(new_route);
+    const auto & route = it.first->second.GetStopsOnRoute();
     for(const auto & stop : route) {
       stops.at(*stop).insert(new_bus);
     }

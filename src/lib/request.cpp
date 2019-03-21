@@ -28,7 +28,7 @@ void RouteDefRequest::Process(BusStopMap& map) {
       new_route.AddStop(std::move(stop));
     }
   }
-  map.AddBus(move(new_bus), move(new_route));
+  map.AddBus(new_bus, move(new_route));
 }
 
 void RouteDefRequest::ParseFrom(string_view input) {

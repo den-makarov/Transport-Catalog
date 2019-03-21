@@ -25,6 +25,27 @@ public:
     double distance;
   };
 
+  BusRoute(const BusRoute& other) {
+    std::cout << "Warning: Route Copied!" << std::endl;
+  }
+
+  BusRoute(BusRoute&& other) {
+    std::swap(one_direction, other.one_direction);
+    std::swap(stops, other.stops);
+    std::swap(geo_length, other.geo_length);
+    std::swap(total_distance, other.total_distance);
+    std::swap(route, other.route);
+  }
+
+  BusRoute& operator=(BusRoute&& other) {
+    std::swap(one_direction, other.one_direction);
+    std::swap(stops, other.stops);
+    std::swap(geo_length, other.geo_length);
+    std::swap(total_distance, other.total_distance);
+    std::swap(route, other.route);
+    return *this;
+  }
+
   BusRoute(bool direction)
     : one_direction(direction)
     , total_distance(0)
