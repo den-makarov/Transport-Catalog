@@ -91,32 +91,51 @@ public:
 
   RouteParams GetRouteParams() const {
     RouteParams params;
+    unsigned long back_distance = 0;
+    unsigned long forward_distance = 0;
 
     if(total_distance == 0) {
       auto prev_id = *route.begin();
       for(const auto id : route) {
-        auto dist1 = prev_id->GetDistanceInfo(id->GetName());
-        auto dist2 = id->GetDistanceInfo(prev_id->GetName());
-        prev_id = id;
+        auto dist_to = prev_id->GetDistanceInfo(id->GetName());
+        auto dist_back = id->GetDistanceInfo(prev_id->GetName());
 
-        if(dist2) {
-          total_distance += dist2.value();
-        } else if (dist1) {
-          total_distance += dist1.value();
+        if(one_direction || id == prev_id) {
+          if(dist_to) {
+            total_distance += dist_to.value();
+          } else if (dist_back) {
+            total_distance += dist_back.value();
+          }
+        } else {
+          if(dist_to) {
+            forward_distance = dist_to.value();
+          } else {
+            forward_distance = dist_back.value();
+          }
+
+          if(dist_back) {
+            back_distance = dist_back.value();
+          } else {
+            back_distance = dist_to.value();
+          }
+
+          total_distance += (forward_distance + back_distance);
         }
+
+        prev_id = id;
       }
     }
+
     params.unique_stops = stops.size();
 
     if(one_direction) {
       params.stops = route.size();
       params.geo_length = geo_length;
-      params.distance = total_distance;
     } else {
       params.stops = (route.size() - 1) * 2 + 1;
       params.geo_length = geo_length * 2.0;
-      params.distance = total_distance * 2;
     }
+    params.distance = total_distance;
 
     return params;
   }
