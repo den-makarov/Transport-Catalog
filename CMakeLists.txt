@@ -51,6 +51,7 @@ add_library(app_lib OBJECT
 add_library(sub_lib OBJECT
     ${LIB_DIR}/stringparser.cpp
     ${LIB_DIR}/request.cpp
+    ${LIB_DIR}/json.cpp
 )
 
 # objects source files
