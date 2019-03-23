@@ -5,6 +5,7 @@
 #include "bus.h"
 #include "BusRoute.h"
 #include "BusStopMap.h"
+#include "json.h"
 
 #include <utility>
 #include <memory>
@@ -25,9 +26,28 @@ public:
 
   static RequestHolder Create(Type type);
   virtual void ParseFrom(std::string_view input) = 0;
+  virtual void ParseFrom(const std::map<std::string, Json::Node>& request) = 0;
   virtual ~Request() = default;
 
   const Type type;
+protected:
+  void ReadString(std::string& str, const std::map<std::string, Json::Node>& request, const std::string& filter) {
+    const auto it = request.find(filter);
+    if(it != request.end()) {
+      if(it->second.index() == STRING_NODE) {
+        str = it->second.AsString();
+      }
+    }
+  }
+
+  void ReadInt(int& number, const std::map<std::string, Json::Node>& request, const std::string& filter) {
+    const auto it = request.find(filter);
+    if(it != request.end()) {
+      if(it->second.index() == NUMBER_NODE) {
+        number = it->second.AsInt();
+      }
+    }
+  }
 };
 
 template <typename ResultType>
@@ -36,6 +56,11 @@ public:
   using Request::Request;
   virtual ResultType Process(const BusStopMap& map) const = 0;
   virtual ~PrintRequest() = default;
+  int GetId() const {
+    return id;
+  }
+protected:
+  int id = 0;
 };
 
 class ModifyRequest : public Request {
@@ -52,6 +77,7 @@ public:
   {}
 
   void ParseFrom(std::string_view input) override;
+  void ParseFrom(const std::map<std::string, Json::Node>& request) override;
   void Process(BusStopMap& map) override;
 private:
   std::string bus_name;
@@ -66,6 +92,7 @@ public:
   {}
 
   void ParseFrom(std::string_view input) override;
+  void ParseFrom(const std::map<std::string, Json::Node>& request) override;
   void Process(BusStopMap& map) override {
     BusStop stop({stop_name, geo});
     stop.AddDistanceInfo(distances);
@@ -86,6 +113,7 @@ public:
   void ParseFrom(std::string_view input) override {
     bus_name = std::string(ReadToken(input, "*"));
   }
+  void ParseFrom(const std::map<std::string, Json::Node>& request) override;
   std::string Process(const BusStopMap& map) const override;
 private:
   std::string bus_name;
@@ -100,6 +128,7 @@ public:
   void ParseFrom(std::string_view input) override {
     stop_name = std::string(ReadToken(input, "*"));
   }
+  void ParseFrom(const std::map<std::string, Json::Node>& request) override;
   std::string Process(const BusStopMap& map) const override;
 private:
   std::string stop_name;

@@ -9,14 +9,8 @@
 
 using namespace std;
 
-//template <typename Number>
-//Number ReadQueriesCount(istream& stream) {
-//  Number number;
-//  stream >> number;
-//  string dummy;
-//  getline(stream, dummy);
-//  return number;
-//}
+#define OUTPUT_REQUEST false
+#define INPUT_REQUEST true
 
 const unordered_map<string_view, Request::Type> STR_TO_INPUT_REQUEST_TYPE = {
   {"Stop", Request::Type::STOP_DECLARATION},
@@ -43,6 +37,133 @@ optional<Request::Type> ConvertRequestTypeFromString(string_view type_str, bool 
     return nullopt;
   }
 }
+
+void ParseRequest(const map<string, Json::Node>& request, vector<Request::RequestHolder>& requests, bool input) {
+  const auto type_it = request.find("type");
+  if(type_it != request.end()) {
+    if(type_it->second.index() == STRING_NODE) {
+      const auto request_type = ConvertRequestTypeFromString(type_it->second.AsString(), input);
+      if (request_type) {
+        Request::RequestHolder new_request = Request::Create(*request_type);
+        if (new_request) {
+          new_request->ParseFrom(request);
+          requests.push_back(move(new_request));
+        };
+      }
+    }
+  }
+}
+
+void ReadTypedRequests(const Json::Node& node, vector<Request::RequestHolder>& requests, bool input) {
+  auto index = node.index();
+  if(index == MAP_NODE) {
+    // Only one input request { request }
+    ParseRequest(node.AsMap(), requests, input);
+  } else if(index == ARRAY_NODE) {
+    // Vector of input requests [ request1, request2, ...]
+    for(const auto& item : node.AsArray()) {
+      if(item.index() == MAP_NODE) {
+        ParseRequest(item.AsMap(), requests, input);
+      }
+    }
+  }
+}
+
+void ReadRequests(const map<string, Json::Node>& request_nodes, vector<Request::RequestHolder>& requests) {
+  for(const auto& [key, value] : request_nodes) {
+    if(key == "base_requests") {
+      ReadTypedRequests(value, requests, INPUT_REQUEST);
+    } else if(key == "stat_requests") {
+      ReadTypedRequests(value, requests, OUTPUT_REQUEST);
+    }
+  }
+}
+
+vector<Request::RequestHolder> FindRequests(const Json::Document& doc) {
+  vector<Request::RequestHolder> requests;
+  /* Try to find any requsts as map or as vector of maps */
+  const auto& root = doc.GetRoot();
+  if(auto index = root.index(); index != variant_npos) {
+    if(index == MAP_NODE) {
+      ReadRequests(root.AsMap(), requests);
+//    } else if (index == ARRAY_NODE) {
+//      for(const auto& item : root.AsArray()) {
+//        auto request_array_index = item.index();
+//        if(request_array_index == MAP_NODE) {
+//          ReadRequests(item.AsMap(), requests);
+//        }
+//      }
+    }
+  }
+
+  return requests;
+}
+
+void ProcessInputRequests(vector<Request::RequestHolder>& requests,
+                         BusStopMap& map) {
+  for (auto& request_holder : requests) {
+    if(request_holder->type == Request::Type::STOP_DECLARATION) {
+      auto& request = static_cast<ModifyRequest&>(*request_holder);
+      request.Process(map);
+    }
+  }
+
+  for (auto& request_holder : requests) {
+    if(request_holder->type == Request::Type::ROUTE_DEFINITION) {
+      auto& request = static_cast<ModifyRequest&>(*request_holder);
+      request.Process(map);
+    }
+  }
+}
+
+vector<string> ProcessOutputRequests(const vector<Request::RequestHolder>& requests,
+                                    const BusStopMap& map) {
+  vector<string> responses;
+  for (const auto& request_holder : requests) {
+    if(request_holder->type != Request::Type::ROUTE_DEFINITION 
+       && request_holder->type != Request::Type::STOP_DECLARATION) {
+      const auto& request = static_cast<const PrintRequest<string>&>(*request_holder);
+      responses.push_back(request.Process(map));
+    }
+  }
+  return responses;
+}
+
+void PrintResponses(const vector<string>& responses, ostream& stream = cout) {
+ for (const auto& response : responses) {
+   stream << response << endl;
+ }
+}
+
+int main() {
+  BusStopMap map;
+
+  Json::Document doc = Json::Load(cin);
+
+  auto requests = FindRequests(doc);
+  cout << requests.size() << "\n";
+  ProcessInputRequests(requests, map);
+  const auto responses = ProcessOutputRequests(requests, map);
+//  const auto output_requests = ReadRequests(OUTPUT_REQUEST);
+//  
+  PrintResponses(responses);
+
+  return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/**
+ * @brief: Requests parses for standard input/output stream
+ */
+
+//template <typename Number>
+//Number ReadQueriesCount(istream& stream) {
+//  Number number;
+//  stream >> number;
+//  string dummy;
+//  getline(stream, dummy);
+//  return number;
+//}
 
 //Request::RequestHolder ParseRequest(const string& request_str, bool input) {
 //  const auto request_type = ConvertRequestTypeFromString(request_str, input);
@@ -72,124 +193,14 @@ optional<Request::Type> ConvertRequestTypeFromString(string_view type_str, bool 
 //  return requests;
 //}
 
-//void ProcessInputRequests(vector<Request::RequestHolder>& requests,
-//                          BusStopMap& map) {
-//  for (auto& request_holder : requests) {
-//    auto& request = static_cast<ModifyRequest&>(*request_holder);
-//    if(request.type == Request::Type::STOP_DECLARATION) {
-//      request.Process(map);
-//    }
-//  }
-
-//  for (auto& request_holder : requests) {
-//    auto& request = static_cast<ModifyRequest&>(*request_holder);
-//    if(request.type == Request::Type::ROUTE_DEFINITION) {
-//      request.Process(map);
-//    }
-//  }
-//}
-
-//vector<string> ProcessOutputRequests(const vector<Request::RequestHolder>& requests,
-//                                     const BusStopMap& map) {
-//  vector<string> responses;
-//  for (const auto& request_holder : requests) {
-//    const auto& request = static_cast<const PrintRequest<string>&>(*request_holder);
-//    responses.push_back(request.Process(map));
-//  }
-//  return responses;
-//}
-
-//void PrintResponses(const vector<string>& responses, ostream& stream = cout) {
-//  for (const auto& response : responses) {
-//    stream << response << endl;
-//  }
-//}
-
-#define ARRAY_NODE 0
-#define MAP_NODE 1
-#define STRING_NODE 2
-#define NUMBER_NODE 3
-
-#define OUTPUT_REQUEST false
-#define INPUT_REQUEST true
-
-void ParseRequest(const map<string, Json::Node>& request, vector<Request::RequestHolder>& requests) {
-  const auto type_it = request.find("type");
-  if(type_it != request.end()) {
-    if(type_it->second.index() == STRING_NODE) {
-      const auto request_type = ConvertRequestTypeFromString(type_it->second.AsString(), INPUT_REQUEST);
-      if (request_type) {
-        Request::RequestHolder request = Request::Create(*request_type);
-        if (request) {
-          // Parse request Data
-          //request->ParseFrom(request_str);
-          requests.push_back(move(request));
-        };
-      }
-    }
-  }
-}
-
-void ReadInputRequests(const Json::Node& node, vector<Request::RequestHolder>& requests) {
-  auto index = node.index();
-  if(index == MAP_NODE) {
-    // Only one input request { request }
-    ParseRequest(node.AsMap(), requests);
-  } else if(index == ARRAY_NODE) {
-    // Vector of input requests [ request1, request2, ...]
-    for(const auto& item : node.AsArray()) {
-      if(item.index() == MAP_NODE) {
-        ParseRequest(item.AsMap(), requests);
-      }
-    }
-  }
-}
-
-void ReadRequests(const map<string, Json::Node>& request_nodes, vector<Request::RequestHolder>& requests) {
-  for(const auto& [key, value] : request_nodes) {
-    if(key == "base_requests") {
-      ReadInputRequests(value, requests);
-    } else if(key == "stat_requests") {
-
-    }
-  }
-}
-
-vector<Request::RequestHolder> FindRequests(const Json::Document& doc) {
-  vector<Request::RequestHolder> requests;
-  /* Try to find any requsts as map or as vector of maps */
-  const auto& root = doc.GetRoot();
-  if(auto index = root.index(); index != variant_npos) {
-    if(index == MAP_NODE) {
-      ReadRequests(root.AsMap(), requests);
-//    } else if (index == ARRAY_NODE) {
-//      for(const auto& item : root.AsArray()) {
-//        auto request_array_index = item.index();
-//        if(request_array_index == MAP_NODE) {
-//          ReadRequests(item.AsMap(), requests);
-//        }
-//      }
-    }
-  }
-
-  return requests;
-}
-
-int main() {
-  BusStopMap map;
-
-  Json::Document doc = Json::Load(cin);
-
-  auto requests = FindRequests(doc);
-
-//
-
-//  auto input_requests = ReadRequests(INPUT_REQUEST);
-//  ProcessInputRequests(input_requests, map);
+// int main() {
+//   BusStopMap map;
+//   auto input_requests = ReadRequests(INPUT_REQUEST);
+//   ProcessInputRequests(input_requests, map);
   
-//  const auto output_requests = ReadRequests(OUTPUT_REQUEST);
-//  const auto responses = ProcessOutputRequests(output_requests, map);
-//  PrintResponses(responses);
+//   const auto output_requests = ReadRequests(OUTPUT_REQUEST);
+//   const auto responses = ProcessOutputRequests(output_requests, map);
+//   PrintResponses(responses);
 
-  return 0;
-}
+//   return 0;
+// }

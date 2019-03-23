@@ -8,6 +8,11 @@
 
 namespace Json {
 
+#define ARRAY_NODE 3
+#define MAP_NODE 3
+#define NUMBER_NODE 3
+#define STRING_NODE 3
+
 class Node : public std::variant<std::vector<Node>,
                                  std::map<std::string, Node>,
                                  int,

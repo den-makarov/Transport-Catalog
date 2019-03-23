@@ -18,6 +18,8 @@ Request::RequestHolder Request::Create(Request::Type type) {
   return {nullptr};
 }
 
+/*------------------------------------------------------------------*/
+
 void RouteDefRequest::Process(BusStopMap& map) {
   Bus new_bus(bus_name);
   BusRoute new_route(one_direction);
@@ -33,28 +35,46 @@ void RouteDefRequest::Process(BusStopMap& map) {
 
 void RouteDefRequest::ParseFrom(string_view input) {
   bus_name = string(ReadToken(input, ": "));
-  // cout << "Bus " << bus_name << ":_";
   
   if(IsContent(input, " > ")) {
     one_direction = true;
     while(input.size()) {
       bus_stops_name.push_back(string(ReadToken(input, " > ")));
-      // cout << bus_stops_name.back() << "_";
     }
   } else {
     one_direction = false;
     while(input.size()) {
       bus_stops_name.push_back(string(ReadToken(input, " - ")));
-      // cout << bus_stops_name.back() << "_";
+    }
+  }
+}
+
+void RouteDefRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
+  ReadString(bus_name, request, "name");
+  
+  const auto dir_it = request.find("is_roundtrip");
+  if(dir_it != request.end()) {
+    if(dir_it->second.index() == NUMBER_NODE) {
+      /* @TODO: Define string to bool parses and dedicated json type */
+      //one_direction = it->second.AsInt();
+      one_direction = true;
     }
   }
 
-  // if(one_direction) {
-  //   cout << "One Direction. Stops " << bus_stops_name.size() << "\n";
-  // } else {
-  //   cout << "Back to Back. Stops " << bus_stops_name.size() << "\n";
-  // }
+  const auto stops_array_it = request.find("stops");
+  if(stops_array_it != request.end()) {
+    if(stops_array_it->second.index() == ARRAY_NODE) {
+      const auto& stops_array = stops_array_it->second.AsArray();
+      for(const auto& item : stops_array) {
+        if(item.index() == STRING_NODE) {
+          bus_stops_name.push_back(item.AsString());
+        }
+      }
+    }
+  }
 }
+
+/*------------------------------------------------------------------*/
 
 void StopDeclRequest::ParseFrom(string_view input) {
   stop_name = string(ReadToken(input, ": "));
@@ -71,8 +91,36 @@ void StopDeclRequest::ParseFrom(string_view input) {
     string stop(ReadToken(input, ", "));
     distances->insert({stop, distance});
   }
-//  cout << setprecision(8) << geo.latidute << " :: " << geo.longitude << "\n";
 }
+
+void StopDeclRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
+  ReadString(stop_name, request, "name");
+
+  int latitude;
+  int longitude;
+  ReadInt(latitude, request, "latitude");
+  ReadInt(longitude, request, "longitude");
+  geo = {longitude, latitude};
+
+  if(!distances) {
+    distances = BusStop::DistanceSet(new map<string, unsigned long>({}));
+  }
+
+  const auto stops_map_it = request.find("road_distances");
+  if(stops_map_it != request.end()) {
+    if(stops_map_it->second.index() == MAP_NODE) {
+      const auto& stops_map = stops_map_it->second.AsMap();
+      for(const auto& [stop, distance_node] : stops_map) {
+        if(distance_node.index() == NUMBER_NODE) {
+          unsigned long distance = distance_node.AsInt();
+          distances->insert({stop, distance});
+        }
+      }
+    }
+  }
+}
+
+/*------------------------------------------------------------------*/
 
 string BusInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
@@ -90,6 +138,13 @@ string BusInfoRequest::Process(const BusStopMap& map) const {
   }
   return result.str();
 }
+
+void BusInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
+  ReadString(bus_name, request, "name");
+  ReadInt(id, request, "id");
+}
+
+/*------------------------------------------------------------------*/
 
 string StopInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
@@ -109,4 +164,9 @@ string StopInfoRequest::Process(const BusStopMap& map) const {
     result << "not found";
   }
   return result.str();
+}
+
+void StopInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
+  ReadString(stop_name, request, "name");
+  ReadInt(id, request, "id");
 }
