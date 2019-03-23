@@ -109,13 +109,13 @@ public:
         } else {
           if(dist_to) {
             forward_distance = dist_to.value();
-          } else {
+          } else if (dist_back) {
             forward_distance = dist_back.value();
           }
 
           if(dist_back) {
             back_distance = dist_back.value();
-          } else {
+          } else if(dist_to) {
             back_distance = dist_to.value();
           }
 

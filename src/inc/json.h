@@ -33,11 +33,16 @@ public:
     return std::get<double>(*this);
   }
   const auto& AsString() const {
-    return std::get<std::string>(*this);
+    if(temp == "") {
+      temp = std::get<std::string>(*this);
+    }
+    return temp;
   }
   const auto& AsBool() const {
     return std::get<bool>(*this);
   }
+private:
+  mutable std::string temp = "";
 };
 
 class Document {

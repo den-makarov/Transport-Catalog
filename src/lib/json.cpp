@@ -76,6 +76,20 @@ namespace Json {
     return Node(result);
   }
 
+  Node LoadNegativeDouble(istream& input) {
+    char c;
+    while(input.get(c) && isspace(c));
+    input.putback(c);
+    return Node( -1.0 * LoadDouble(input).AsDouble());
+  }
+
+  Node LoadPositiveDouble(istream& input) {
+    char c;
+    while(input.get(c) && isspace(c));
+    input.putback(c);
+    return Node(LoadDouble(input).AsDouble());
+  }
+
   Node LoadString(istream& input) {
     string line;
     getline(input, line, '"');
@@ -91,9 +105,6 @@ namespace Json {
       if (c == ',') {
         while(input.get(c) && isspace(c));
       }
-      // if(c == '"') {
-      //   input >> c;
-      // }
       string key = LoadString(input).AsString();
       input >> c;
       result.emplace(move(key), LoadNode(input));
@@ -123,6 +134,10 @@ namespace Json {
       return LoadString(input);
     } else if (c == 'f' || c == 't') {
       return LoadBool(input, c);
+    } else if (c == '-') {
+      return LoadNegativeDouble(input);
+    } else if (c == '+') {
+      return LoadPositiveDouble(input);
     } else {
       input.putback(c);
       return LoadDouble(input);

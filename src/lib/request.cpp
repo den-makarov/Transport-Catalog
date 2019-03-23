@@ -133,7 +133,7 @@ string BusInfoRequest::Process(const BusStopMap& map) const {
     result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
     result << spaces << "\"curvature\": " << fixed << setprecision(6) << params.distance / params.geo_length << ",\n";
     result << spaces << "\"stop_count\": " << params.stops << ",\n";
-    result << spaces << "\"unique_stop_count\": " << params.unique_stops << "\n";
+    result << spaces << "\"unique_stop_count\": " << params.unique_stops;
   } else {
     result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
     result << spaces << "\"error_message\": \"not found\"";
