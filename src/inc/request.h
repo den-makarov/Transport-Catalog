@@ -40,11 +40,11 @@ protected:
     }
   }
 
-  void ReadInt(int& number, const std::map<std::string, Json::Node>& request, const std::string& filter) {
+  void ReadNumber(double& number, const std::map<std::string, Json::Node>& request, const std::string& filter) {
     const auto it = request.find(filter);
     if(it != request.end()) {
       if(it->second.index() == NUMBER_NODE) {
-        number = it->second.AsInt();
+        number = it->second.AsDouble();
       }
     }
   }

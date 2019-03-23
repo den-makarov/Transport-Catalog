@@ -130,9 +130,18 @@ vector<string> ProcessOutputRequests(const vector<Request::RequestHolder>& reque
 }
 
 void PrintResponses(const vector<string>& responses, ostream& stream = cout) {
- for (const auto& response : responses) {
-   stream << response << endl;
- }
+  stream << "[\n";
+  size_t size = responses.size();
+  for (const auto& response : responses) {
+    stream << "  {\n";
+    stream << response << endl;
+    stream << "  }";
+    if(--size != 0) {
+      stream << ",";
+    }
+    stream << "\n";
+  }
+  stream << "]\n";
 }
 
 int main() {
@@ -140,12 +149,12 @@ int main() {
 
   Json::Document doc = Json::Load(cin);
 
+  // Json::Print(cout, doc.GetRoot());
+  // cout << "\n";
+
   auto requests = FindRequests(doc);
-  cout << requests.size() << "\n";
   ProcessInputRequests(requests, map);
   const auto responses = ProcessOutputRequests(requests, map);
-//  const auto output_requests = ReadRequests(OUTPUT_REQUEST);
-//  
   PrintResponses(responses);
 
   return 0;

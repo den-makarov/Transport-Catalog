@@ -1,22 +1,25 @@
 #pragma once
 
-#include <istream>
+#include <iostream>
 #include <map>
 #include <string>
 #include <variant>
 #include <vector>
+#include <iomanip>
 
 namespace Json {
 
-#define ARRAY_NODE 3
-#define MAP_NODE 3
-#define NUMBER_NODE 3
+#define ARRAY_NODE 0
+#define MAP_NODE 1
+#define NUMBER_NODE 2
 #define STRING_NODE 3
+#define BOOL_NODE 4
 
 class Node : public std::variant<std::vector<Node>,
                                  std::map<std::string, Node>,
-                                 int,
-                                 std::string> {
+                                 double,
+                                 std::string,
+                                 bool> {
 public:
   using variant::variant;
 
@@ -26,11 +29,14 @@ public:
   const auto& AsMap() const {
     return std::get<std::map<std::string, Node>>(*this);
   }
-  int AsInt() const {
-    return std::get<int>(*this);
+  double AsDouble() const {
+    return std::get<double>(*this);
   }
   const auto& AsString() const {
     return std::get<std::string>(*this);
+  }
+  const auto& AsBool() const {
+    return std::get<bool>(*this);
   }
 };
 
@@ -45,5 +51,6 @@ private:
 };
 
 Document Load(std::istream& input);
+void Print(std::ostream& out, const Node& node);
 
 }

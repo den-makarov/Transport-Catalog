@@ -54,10 +54,9 @@ void RouteDefRequest::ParseFrom(const std::map<std::string, Json::Node>& request
   
   const auto dir_it = request.find("is_roundtrip");
   if(dir_it != request.end()) {
-    if(dir_it->second.index() == NUMBER_NODE) {
+    if(dir_it->second.index() == BOOL_NODE) {
       /* @TODO: Define string to bool parses and dedicated json type */
-      //one_direction = it->second.AsInt();
-      one_direction = true;
+      one_direction = dir_it->second.AsBool();
     }
   }
 
@@ -96,10 +95,10 @@ void StopDeclRequest::ParseFrom(string_view input) {
 void StopDeclRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
   ReadString(stop_name, request, "name");
 
-  int latitude;
-  int longitude;
-  ReadInt(latitude, request, "latitude");
-  ReadInt(longitude, request, "longitude");
+  double latitude;
+  double longitude;
+  ReadNumber(latitude, request, "latitude");
+  ReadNumber(longitude, request, "longitude");
   geo = {longitude, latitude};
 
   if(!distances) {
@@ -112,7 +111,7 @@ void StopDeclRequest::ParseFrom(const std::map<std::string, Json::Node>& request
       const auto& stops_map = stops_map_it->second.AsMap();
       for(const auto& [stop, distance_node] : stops_map) {
         if(distance_node.index() == NUMBER_NODE) {
-          unsigned long distance = distance_node.AsInt();
+          unsigned long distance = static_cast<unsigned long>(distance_node.AsDouble());
           distances->insert({stop, distance});
         }
       }
@@ -124,49 +123,95 @@ void StopDeclRequest::ParseFrom(const std::map<std::string, Json::Node>& request
 
 string BusInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
-  result << "Bus " << bus_name << ": ";
+  string spaces = "    ";
   auto route_id = map.GetRouteByBus(bus_name);
   if(route_id) {
     const auto& route = route_id.value()->second;
     auto params = route.GetRouteParams();
-    result << params.stops << " stops on route, ";
-    result << params.unique_stops << " unique stops, ";
-    result << fixed << setprecision(0) << params.distance << " route length, ";
-    result << setprecision(8) << params.distance / params.geo_length << " curvature";
+    
+    result << spaces << "\"route_length\": " << fixed << setprecision(0) << params.distance << ",\n";
+    result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
+    result << spaces << "\"curvature\": " << fixed << setprecision(6) << params.distance / params.geo_length << ",\n";
+    result << spaces << "\"stop_count\": " << params.stops << ",\n";
+    result << spaces << "\"unique_stop_count\": " << params.unique_stops << "\n";
   } else {
-    result << "not found";
+    result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
+    result << spaces << "\"error_message\": \"not found\"";
   }
   return result.str();
+
+  // result << "Bus " << result << "Bus " << bus_name << ": ";
+  // auto route_id = map.GetRouteByBus(bus_name);
+  // if(route_id) {
+  //   const auto& route = route_id.value()->second;
+  //   auto params = route.GetRouteParams();
+  //   result << params.stops << " stops on route, ";
+  //   result << params.unique_stops << " unique stops, ";
+  //   result << fixed << setprecision(0) << params.distance << " route length, ";
+  //   result << setprecision(8) << params.distance / params.geo_length << " curvature";
+  // } else {
+  //   result << "not found";
+  // }
+  // return result.str();
 }
 
 void BusInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
   ReadString(bus_name, request, "name");
-  ReadInt(id, request, "id");
+  double d_id;
+  ReadNumber(d_id, request, "id");
+  id = static_cast<int>(d_id);
 }
 
 /*------------------------------------------------------------------*/
 
 string StopInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
-  result << "Stop " << stop_name << ": ";
+  string spaces = "    ";
   auto board_id = map.GetStopBoardByName(stop_name);
   if(board_id) {
     const auto board = board_id.value();
-    if(board->size()) {
-      result << "buses";
+    auto size = board->size();
+    if(size) {
+      result << spaces << "\"buses\": [\n";
       for(const auto & bus : *board) {
-        result << " " << bus.GetNumber();
+        result << spaces << "  \"" << bus.GetNumber() << "\"";
+        if(--size != 0) {
+          result << ",";
+        }
+        result << "\n";
       }
+      result << spaces << "],\n";
     } else {
-      result << "no buses";
+      result << spaces << "\"buses\": [],\n";
     }
+    result << spaces << "\"request_id\": " << fixed << setprecision(0) << id;
   } else {
-    result << "not found";
+    result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
+    result << spaces << "\"error_message\": \"not found\"";
   }
   return result.str();
+
+  // result << "Stop " << stop_name << ": ";
+  // auto board_id = map.GetStopBoardByName(stop_name);
+  // if(board_id) {
+  //   const auto board = board_id.value();
+  //   if(board->size()) {
+  //     result << "buses";
+  //     for(const auto & bus : *board) {
+  //       result << " " << bus.GetNumber();
+  //     }
+  //   } else {
+  //     result << "no buses";
+  //   }
+  // } else {
+  //   result << "not found";
+  // }
+  // return result.str();
 }
 
 void StopInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
   ReadString(stop_name, request, "name");
-  ReadInt(id, request, "id");
+  double d_id;
+  ReadNumber(d_id, request, "id");
+  id = static_cast<int>(d_id);
 }
