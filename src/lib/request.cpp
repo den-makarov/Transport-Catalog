@@ -14,8 +14,25 @@ Request::RequestHolder Request::Create(Request::Type type) {
     return make_unique<BusInfoRequest>();
   case Type::STOP_INFO:
     return make_unique<StopInfoRequest>();
+  case Type::ROUTE_SETTINGS:
+    return make_unique<RouteSettings>();
   }
   return {nullptr};
+}
+
+/*------------------------------------------------------------------*/
+
+void RouteSettings::ParseFrom(const std::map<std::string, Json::Node>& request) {
+  double d_id;
+  ReadNumber(d_id, request, "bus_wait_time");
+  wait_time = static_cast<int>(d_id);
+
+  ReadNumber(d_id, request, "bus_velocity");
+  velocity = static_cast<int>(d_id);
+}
+
+void RouteSettings::Process(BusStopMap& map) {
+  map.AddSettings(velocity, wait_time);
 }
 
 /*------------------------------------------------------------------*/
@@ -211,6 +228,24 @@ string StopInfoRequest::Process(const BusStopMap& map) const {
 
 void StopInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
   ReadString(stop_name, request, "name");
+  double d_id;
+  ReadNumber(d_id, request, "id");
+  id = static_cast<int>(d_id);
+}
+
+/*------------------------------------------------------------------*/
+
+string RouteInfoRequest::Process(const BusStopMap& map) const {
+  ostringstream result;
+  string spaces = "    ";
+  /* @TODO: Implement optimal route path */
+  result << spaces;
+  return result.str();
+}
+
+void RouteInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
+  ReadString(stop_from, request, "from");
+  ReadString(stop_to, request, "to");
   double d_id;
   ReadNumber(d_id, request, "id");
   id = static_cast<int>(d_id);

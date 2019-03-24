@@ -19,7 +19,8 @@ const unordered_map<string_view, Request::Type> STR_TO_INPUT_REQUEST_TYPE = {
 
 const unordered_map<string_view, Request::Type> STR_TO_OUTPUT_REQUEST_TYPE = {
   {"Bus", Request::Type::BUS_INFO},
-  {"Stop", Request::Type::STOP_INFO}
+  {"Stop", Request::Type::STOP_INFO},
+  {"Route", Request::Type::ROUTE_INFO}
 };
 
 optional<Request::Type> ConvertRequestTypeFromString(string_view type_str, bool input) {
@@ -75,6 +76,12 @@ void ReadRequests(const map<string, Json::Node>& request_nodes, vector<Request::
       ReadTypedRequests(value, requests, INPUT_REQUEST);
     } else if(key == "stat_requests") {
       ReadTypedRequests(value, requests, OUTPUT_REQUEST);
+    } else if(key == "routing_settings") {
+      if(value.index() == MAP_NODE) {
+        Request::RequestHolder new_request = Request::Create(Request::Type::ROUTE_SETTINGS);
+        new_request->ParseFrom(value.AsMap());
+        requests.push_back(move(new_request));
+      }
     }
   }
 }

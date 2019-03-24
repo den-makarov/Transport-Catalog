@@ -18,6 +18,11 @@ public:
 
   BusStopMap() {}
 
+  void AddSettings(int new_velocity, int new_wait_time) {
+    velocity = new_velocity;
+    wait_time = new_wait_time;
+  }
+
   void AddStop(const BusStop& new_stop) {
     stops.insert({new_stop, {}});
   }
@@ -64,6 +69,8 @@ public:
 private:
   std::unordered_map<BusStop, std::set<Bus>, BusStopHasher> stops;
   std::unordered_map<Bus, BusRoute, BusHasher> buses;
+  int velocity;
+  int wait_time;
 };
 
 #endif // BUSSTOPMAP_H

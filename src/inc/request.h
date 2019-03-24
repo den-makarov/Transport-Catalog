@@ -19,7 +19,9 @@ public:
     STOP_DECLARATION,
     ROUTE_DEFINITION,
     BUS_INFO,
-    STOP_INFO
+    STOP_INFO,
+    ROUTE_SETTINGS,
+    ROUTE_INFO
   };
 
   Request(Type t) : type(t) {}
@@ -68,6 +70,22 @@ public:
   using Request::Request;
   virtual void Process(BusStopMap& map) = 0;
   virtual ~ModifyRequest() = default;
+};
+
+class RouteSettings : public ModifyRequest {
+public:
+  RouteSettings()
+  : ModifyRequest(Type::ROUTE_SETTINGS)
+  {}
+  void ParseFrom(const std::map<std::string, Json::Node>& request) override;
+  void ParseFrom(std::string_view input) override {
+    /* UNSUPPORTED */
+    (void)input;
+  }
+  void Process(BusStopMap& map) override;
+private:
+  int wait_time = 1;
+  int velocity = 1;
 };
 
 class RouteDefRequest : public ModifyRequest {
@@ -132,6 +150,23 @@ public:
   std::string Process(const BusStopMap& map) const override;
 private:
   std::string stop_name;
+};
+
+class RouteInfoRequest : public PrintRequest<std::string> {
+public:
+  RouteInfoRequest()
+  : PrintRequest(Type::ROUTE_INFO)
+  {}
+
+  void ParseFrom(std::string_view input) override {
+    (void)input;
+    /* UNSUPPORTED */
+  }
+  void ParseFrom(const std::map<std::string, Json::Node>& request) override;
+  std::string Process(const BusStopMap& map) const override;
+private:
+  std::string stop_from;
+  std::string stop_to;
 };
 
 #endif // REQUEST_H
