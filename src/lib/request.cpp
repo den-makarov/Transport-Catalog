@@ -237,11 +237,25 @@ void StopInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request
 
 /*------------------------------------------------------------------*/
 
+//{
+//    "request_id": <id запроса>,
+//    "total_time": <суммарное время>,
+//    "items": [
+//        <элементы маршрута>
+//    ]
+//}
+
 string RouteInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
   string spaces = "    ";
-  /* @TODO: Implement optimal route path */
-  result << spaces;
+  result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
+  auto optimal_route = map.GetOptimalPath(stop_from, stop_to);
+  if(optimal_route) {
+    result << spaces << "\"total_time\": " << fixed << setprecision(6) << optimal_route.value() << ",\n";
+    result << spaces << "\"items\": [\n" << "]";
+  } else {
+    result << spaces << "\"error_message\": \"not found\"";
+  }
   return result.str();
 }
 

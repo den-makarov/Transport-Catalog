@@ -141,8 +141,9 @@ vector<string> ProcessRequests(Requests& requests, BusStopMap& map) {
   vector<string> responses;
 
   for (const auto& request_holder : requests) {
-    if(request_holder->type != Request::Type::ROUTE_DEFINITION 
-       && request_holder->type != Request::Type::STOP_DECLARATION) {
+    if(request_holder->type == Request::Type::BUS_INFO
+       || request_holder->type == Request::Type::STOP_INFO
+       || request_holder->type == Request::Type::ROUTE_INFO) {
       const auto& request = static_cast<const PrintRequest<string>&>(*request_holder);
       responses.push_back(request.Process(map));
     }
