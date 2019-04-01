@@ -85,7 +85,7 @@ public:
   void Process(BusStopMap& map) override;
 private:
   int wait_time = 1;
-  int velocity = 1;
+  double velocity = 1.0;
 };
 
 class RouteDefRequest : public ModifyRequest {

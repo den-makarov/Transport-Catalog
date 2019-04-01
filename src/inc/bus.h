@@ -39,5 +39,4 @@ struct BusHasher {
   }
 };
 
-
 #endif // BUS_H

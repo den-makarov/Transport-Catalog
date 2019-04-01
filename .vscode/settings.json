@@ -37,7 +37,8 @@
     "unordered_set": "cpp",
     "iomanip": "cpp",
     "variant": "cpp",
-    "ctime": "cpp"
+    "ctime": "cpp",
+    "deque": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
   "C_Cpp.default.cppStandard": "c++17"

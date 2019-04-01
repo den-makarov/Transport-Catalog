@@ -16,6 +16,8 @@ Request::RequestHolder Request::Create(Request::Type type) {
     return make_unique<StopInfoRequest>();
   case Type::ROUTE_SETTINGS:
     return make_unique<RouteSettings>();
+  case Type::ROUTE_INFO:
+    return make_unique<RouteInfoRequest>();
   }
   return {nullptr};
 }
@@ -23,12 +25,12 @@ Request::RequestHolder Request::Create(Request::Type type) {
 /*------------------------------------------------------------------*/
 
 void RouteSettings::ParseFrom(const std::map<std::string, Json::Node>& request) {
-  double d_id;
-  ReadNumber(d_id, request, "bus_wait_time");
-  wait_time = static_cast<int>(d_id);
+  double d_value;
+  ReadNumber(d_value, request, "bus_wait_time");
+  wait_time = static_cast<int>(d_value);
 
-  ReadNumber(d_id, request, "bus_velocity");
-  velocity = static_cast<int>(d_id);
+  ReadNumber(d_value, request, "bus_velocity");
+  velocity = d_value;
 }
 
 void RouteSettings::Process(BusStopMap& map) {
@@ -246,7 +248,8 @@ string RouteInfoRequest::Process(const BusStopMap& map) const {
 void RouteInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request) {
   ReadString(stop_from, request, "from");
   ReadString(stop_to, request, "to");
-  double d_id;
-  ReadNumber(d_id, request, "id");
-  id = static_cast<int>(d_id);
+  
+  double d_value;
+  ReadNumber(d_value, request, "id");
+  id = static_cast<int>(d_value);
 }

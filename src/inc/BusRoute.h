@@ -18,6 +18,11 @@ class BusRoute
 public:
   using BusStopId = std::unordered_set<BusStop, BusStopHasher>::iterator;
 
+  struct Distance {
+    unsigned long forward;
+    unsigned long back;
+  };
+
   struct RouteParams {
     size_t stops;
     size_t unique_stops;
@@ -138,6 +143,10 @@ public:
     params.distance = total_distance;
 
     return params;
+  }
+
+  size_t GetStopsCount() const {
+    return route.size();
   }
 
   bool IsOneDirection() const {

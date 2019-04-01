@@ -28,6 +28,7 @@ void ValidateBounds(Number number_to_check, Number min_value, Number max_value) 
   }
 }
 
+namespace SimpleRange {
 template<typename It>
 class Range {
 public:
@@ -40,5 +41,6 @@ private:
   It begin_;
   It end_;
 };
+}
 
 #endif // STRINGPARSER_H
