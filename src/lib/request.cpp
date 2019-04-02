@@ -250,9 +250,83 @@ string RouteInfoRequest::Process(const BusStopMap& map) const {
   string spaces = "    ";
   result << spaces << "\"request_id\": " << fixed << setprecision(0) << id << ",\n";
   auto optimal_route = map.GetOptimalPath(stop_from, stop_to);
-  if(optimal_route) {
-    result << spaces << "\"total_time\": " << fixed << setprecision(6) << optimal_route.value() << ",\n";
-    result << spaces << "\"items\": [\n" << "]";
+
+  if(optimal_route.size() > 1) {
+    result << spaces << "\"total_time\": "
+           << fixed << setprecision(6)
+           << optimal_route[0].GetTime() << ",\n";
+    result << spaces << "\"items\": [\n";
+    double bus_time = 0.0;
+    size_t spans = 1;
+
+    bool was_stop = false;
+    for(size_t idx = 1; idx < optimal_route.size(); idx++) {
+      if(optimal_route[idx].IsStop()){
+
+        /* Print postponed bus */
+        if(idx != 1) {
+          //"span_count": 2,
+          //"time": 5.235
+          result << spaces << spaces << spaces << "\"span_count\": " << spans << ",\n";
+          result << spaces << spaces << spaces << "\"time\": "
+                 << fixed << setprecision(6)
+                 << bus_time << "\n";
+          result << spaces << spaces << "}";
+          if(idx == optimal_route.size() - 1) {
+            result << "\n";
+          } else {
+            result << ",\n";
+          }
+        }
+
+        /* stop */
+        was_stop = true;
+        result << spaces << spaces << "{\n";
+        result << spaces << spaces << spaces << "\"type\": \"Wait\",\n";
+        result << spaces << spaces << spaces << "\"stop_name\": \"" << optimal_route[idx].GetName() << "\",\n";
+        result << spaces << spaces << spaces << "\"time\": "
+               << fixed << setprecision(0)
+               << optimal_route[idx].GetTime() << "\n";
+        result << spaces << spaces << "},\n";
+      } else {
+        //"type": "Bus",
+        //"bus": "297",
+        if(was_stop) {
+          /* new bus */
+          result << spaces << spaces << "{\n";
+          result << spaces << spaces << spaces << "\"type\": \"Bus\",\n";
+          result << spaces << spaces << spaces << "\"bus\": \"" << optimal_route[idx].GetName() << "\",\n";
+          spans = 1;
+          bus_time = optimal_route[idx].GetTime();
+        } else {
+          /* the same bus */
+          spans++;
+          bus_time += optimal_route[idx].GetTime();
+        }
+        was_stop = false;
+
+        if(idx == optimal_route.size() - 1) {
+          //"span_count": 2,
+          //"time": 5.235
+          result << spaces << spaces << spaces << "\"span_count\": " << spans << ",\n";
+          result << spaces << spaces << spaces << "\"time\": "
+                 << fixed << setprecision(6)
+                 << bus_time << "\n";
+          result << spaces << spaces << "}";
+          if(idx == optimal_route.size() - 1) {
+            result << "\n";
+          } else {
+            result << ",\n";
+          }
+        }
+      }
+    }
+    result << spaces << "]";
+  } else if(optimal_route.size() == 1) {
+    result << spaces << "\"total_time\": "
+           << fixed << setprecision(6)
+           << optimal_route[0].GetTime() << ",\n";
+    result << spaces << "\"items\": [\n" << spaces << "]";
   } else {
     result << spaces << "\"error_message\": \"not found\"";
   }
