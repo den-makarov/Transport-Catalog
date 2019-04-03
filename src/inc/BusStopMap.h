@@ -71,7 +71,7 @@ public:
 
   class RoutePoint {
   public:
-    RoutePoint(Type t, const std::string& n, double weight)
+    RoutePoint(BusStopMap::Type t, const std::string& n, double weight)
       : type(t)
       , name(n)
       , time(weight)
@@ -93,7 +93,7 @@ public:
       return type == Type::STOP;
     }
   private:
-    Type type;
+    BusStopMap::Type type;
     const std::string& name;
     double time;
   };
