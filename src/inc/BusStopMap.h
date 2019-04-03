@@ -19,6 +19,48 @@ public:
   using RouteId = std::unordered_map<Bus, BusRoute, BusHasher>::iterator;
   using ConstRouteId = std::unordered_map<Bus, BusRoute, BusHasher>::const_iterator;
 
+  struct Weight
+  {
+    double weight;
+    double wait;
+    const std::string * bus_number;
+    
+    Weight operator+(const Weight& other) const {
+      Weight new_weight(weight + other.weight, 
+                        wait, 
+                        other.bus_number);
+
+      if(bus_number != other.bus_number) {
+        new_weight.weight += wait;
+      }
+      return new_weight;
+    }
+
+    bool operator<(const Weight& other) const {
+      return weight < other.weight;
+    }
+
+    bool operator>(const Weight& other) const {
+      return weight > other.weight;
+    }
+
+    bool operator>=(double value) const {
+      return weight >= value;
+    }
+
+    Weight(double val, double wait, const std::string* str) 
+    : weight(val)
+    , wait(wait)
+    , bus_number(str)
+    {}
+
+    Weight(double val) 
+    : weight(val)
+    , wait(val)
+    , bus_number(nullptr)
+    {}
+  };
+
   BusStopMap() {}
 
   enum class Type {
@@ -108,7 +150,7 @@ public:
 private:
   void BuildPathGraph();
   BusRoute::Distance GetDistance(BusRoute::BusStopId from, BusRoute::BusStopId to);
-  std::vector<RoutePoint> ParseOptimalPath(const Graph::Router<double>::RouteInfo& result,
+  std::vector<RoutePoint> ParseOptimalPath(const Graph::Router<Weight>::RouteInfo& result,
                                            double weight) const;
 
   std::unordered_map<BusStop, std::set<Bus>, BusStopHasher> stops;
@@ -120,9 +162,10 @@ private:
 
   std::unordered_map<Graph::VertexId, std::pair<const Bus&, const std::string&>> stop_route_ids;
   std::unordered_map<std::string, std::vector<Graph::VertexId>> stops_vertexes;
-  std::unique_ptr<Graph::DirectedWeightedGraph<double>> path_graph;
-  std::unique_ptr<Graph::Router<double>> path_router;
-  mutable std::vector<std::optional<Graph::Router<double>::RouteInfo>> optimal_routes;
+  
+  std::unique_ptr<Graph::DirectedWeightedGraph<Weight>> path_graph;
+  std::unique_ptr<Graph::Router<Weight>> path_router;
+  mutable std::vector<std::optional<Graph::Router<Weight>::RouteInfo>> optimal_routes;
 };
 
 #endif // BUSSTOPMAP_H

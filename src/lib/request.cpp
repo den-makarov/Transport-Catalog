@@ -237,14 +237,6 @@ void StopInfoRequest::ParseFrom(const std::map<std::string, Json::Node>& request
 
 /*------------------------------------------------------------------*/
 
-//{
-//    "request_id": <id запроса>,
-//    "total_time": <суммарное время>,
-//    "items": [
-//        <элементы маршрута>
-//    ]
-//}
-
 string RouteInfoRequest::Process(const BusStopMap& map) const {
   ostringstream result;
   string spaces = "    ";
