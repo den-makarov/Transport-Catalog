@@ -29,7 +29,7 @@ public:
     
     Weight operator+(const Weight& other) const {
       Weight new_weight(weight + other.weight, 
-                        wait, 
+                        wait,
                         other.bus_number);
 
       if(bus_number != other.bus_number) {
@@ -50,15 +50,15 @@ public:
       return weight >= value;
     }
 
-    Weight(double val, double wait, const std::string* str) 
+    Weight(double val, double w, const std::string* str)
     : weight(val)
-    , wait(wait)
+    , wait(w)
     , bus_number(str)
     {}
 
     Weight(double val) 
     : weight(val)
-    , wait(val)
+    , wait(0.0)
     , bus_number(nullptr)
     {}
   };

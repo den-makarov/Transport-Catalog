@@ -39,23 +39,17 @@ BusStopMap::Results BusStopMap::ParseOptimalPath(const Graph::Router<Weight>::Ro
       auto stop_from_it = stop_route_ids.find(edge.from);
       if(stop_from_it != stop_route_ids.end()) {
         const auto& stop_from = stop_from_it->second;
+
         BusStopMap::RoutePoint stop(BusStopMap::Type::STOP,
                                     stop_from,
                                     wait_time);
         points.push_back(std::move(stop));
-
-//        /* Update total time */
-//        if(idx == 0) {
-//          points[0].UpdateTime(points[0].GetTime() + wait_time);
-//        }
       }
-
     }
 
     BusStopMap::RoutePoint bus(BusStopMap::Type::BUS,
                                *edge.weight.bus_number,
                                edge.weight.weight);
-
     points.push_back(std::move(bus));
     previous_bus = current_bus;
   }
@@ -86,18 +80,13 @@ void BusStopMap::BuildPathGraph() {
       auto stop_it = stops_vertexes.find(stop->GetName());
       if(stop_it != stops_vertexes.end()) {
         /* It was added earlier, so use vertex for calculations */
-
         /* Only to avoid UB just to check that it was realy added */
         auto vertex_it = stop_route_ids.find(stop_it->second);
         if(vertex_it != stop_route_ids.end()) {
           vertex_to = vertex_it->first;
           /* The stop definitely was added and its vertex already in graph */
-
           /* So, just add stop with bus */
-          //vertex_it->second.push_back({bus, stop->GetName()});
-        } else {
-          /* something went wrong */
-        }
+        } else { /* something went wrong */ }
       } else {
         /* It is the first stop in base and has to be the first vertex */
         stops_vertexes[stop->GetName()] = vertex_idx;
@@ -130,8 +119,7 @@ void BusStopMap::BuildPathGraph() {
           path_graph->AddEdge(forward_edge);
 
           /* Add vertex in back direction for ordinary route */
-          double back_w = distance.back / velocity;
-          weight = Weight(back_w, wait_time, &bus.GetNumber());
+          weight.weight = distance.back / velocity;
           Graph::Edge<Weight> back_edge = {vertex_to,
                                            vertex_from,
                                            weight};
@@ -140,6 +128,7 @@ void BusStopMap::BuildPathGraph() {
       }
       prev_stop = stop;
     }
+  /* Check if it was round */
   }
   path_router = std::make_unique<Graph::Router<Weight>>(*path_graph);
 }
