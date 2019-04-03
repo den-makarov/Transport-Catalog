@@ -15,9 +15,11 @@
 class BusStopMap
 {
 public:
+  class RoutePoint;
   using StopBoard = std::set<Bus> *;
   using RouteId = std::unordered_map<Bus, BusRoute, BusHasher>::iterator;
   using ConstRouteId = std::unordered_map<Bus, BusRoute, BusHasher>::const_iterator;
+  using Results = std::vector<RoutePoint>;
 
   struct Weight
   {
@@ -146,11 +148,11 @@ public:
       return {std::nullopt};
     }
   }
-  std::vector<RoutePoint> GetOptimalPath(const std::string& stop_from, const std::string& stop_to) const;
+  Results GetOptimalPath(const std::string& stop_from, const std::string& stop_to) const;
 private:
   void BuildPathGraph();
   BusRoute::Distance GetDistance(BusRoute::BusStopId from, BusRoute::BusStopId to);
-  std::vector<RoutePoint> ParseOptimalPath(const Graph::Router<Weight>::RouteInfo& result,
+  Results ParseOptimalPath(const Graph::Router<Weight>::RouteInfo& result,
                                            double weight) const;
 
   std::unordered_map<BusStop, std::set<Bus>, BusStopHasher> stops;
@@ -160,8 +162,8 @@ private:
   double wait_time;
   size_t stopsXbuses = 0;
 
-  std::unordered_map<Graph::VertexId, std::pair<const Bus&, const std::string&>> stop_route_ids;
-  std::unordered_map<std::string, std::vector<Graph::VertexId>> stops_vertexes;
+  std::unordered_map<Graph::VertexId, const std::string&> stop_route_ids;
+  std::unordered_map<std::string, Graph::VertexId> stops_vertexes;
   
   std::unique_ptr<Graph::DirectedWeightedGraph<Weight>> path_graph;
   std::unique_ptr<Graph::Router<Weight>> path_router;

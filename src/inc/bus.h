@@ -14,16 +14,9 @@ public:
     std::hash<std::string> s_hash;
     bus_hash = s_hash(number);
   }
-
   //static Bus FromString(std::string_view str);
-
-  size_t GetHash() const {
-    return bus_hash;
-  }
-
-  const std::string& GetNumber() const {
-    return number;
-  }
+  size_t GetHash() const { return bus_hash; }
+  const std::string& GetNumber() const { return number; }
 
 private:
   std::string number;

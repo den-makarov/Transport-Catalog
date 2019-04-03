@@ -25,36 +25,13 @@ public:
     stop_hash = s_hash(name);
   }
 
-  BusStop(const BusStop& other) {
-    stop_hash = other.stop_hash;
-    location = other.location;
-    name = other.name;
-    distances = other.distances;
-  }
+  BusStop(const BusStop& other);
+  std::optional<unsigned long> GetDistanceInfo(const std::string& stop_name) const;
+  void AddDistanceInfo(DistanceSet new_set) { distances = new_set; }
+  size_t GetHash() const { return stop_hash; }
+  const std::string& GetName() const { return name; }
+  Location GetLocation() const { return location; }
 
-  void AddDistanceInfo(DistanceSet new_set) {
-    distances = new_set;
-  }
-
-  std::optional<unsigned long> GetDistanceInfo(const std::string& stop_name) const {
-    auto it = distances->find(stop_name);
-    if(it != distances->end()) {
-      return {it->second};
-    } else {
-      return {std::nullopt};
-    }
-  }
-
-  size_t GetHash() const {
-    return stop_hash;
-  }
-  const std::string& GetName() const {
-    return name;
-  }
-
-  Location GetLocation() const {
-    return location;
-  }
 private:
   Location location;
   std::string name;
