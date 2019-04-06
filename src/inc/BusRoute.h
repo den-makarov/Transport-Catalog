@@ -46,6 +46,7 @@ public:
   RouteParams GetRouteParams() const;
   const std::vector<BusStopId>& GetStopsOnRoute() const { return route; }
   size_t GetStopsCount() const { return route.size(); }
+  size_t GetUniqueStopsCount() const { return stops.size(); }
   bool IsOneDirection() const { return one_direction; }
 
 private:

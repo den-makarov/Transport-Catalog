@@ -41,44 +41,40 @@ BusStopMap::Results BusStopMap::ParseOptimalPath(const Graph::Router<Weight>::Ro
                                     stop_from_it->second.first,
                                     wait_time);
         points.push_back(stop);
-      } else if ( stop_to_it->second.second != wait_stop ) {
+      } else if( stop_to_it->second.second != wait_stop ) {
         if(idx == 0) {
           BusStopMap::RoutePoint stop(BusStopMap::ActivityType::STOP,
                                       stop_from_it->second.first,
                                       wait_time);
           points.push_back(stop);
-          points[0].UpdateTime(points[0].GetTime() + wait_time);
+          points[0].UpdateTime(points[0].GetTime() + wait_time / 2);
         }
-        
+
+        if(idx == edge_count - 1) {
+          points[0].UpdateTime(points[0].GetTime() + wait_time / 2);
+        }
+
         BusStopMap::RoutePoint stop(BusStopMap::ActivityType::BUS,
                                     stop_from_it->second.second,
                                     edge.weight.weight);
         points.push_back(stop);
-        
-        if(idx == edge_count - 1) {
-          points[0].UpdateTime(points[0].GetTime() + wait_time / 2);
-        }
       }
+      // } else if( stop_to_it->second.second == wait_stop ) {
+      //   // if(idx == edge_count - 1) {
+      //   //   points[0].UpdateTime(points[0].GetTime() + wait_time / 2);
+      //   // }
+      // }
     }
   }
-  if(edge_count > 0) {
-    points[0].UpdateTime(points[0].GetTime() - wait_time / 2);
-  }
+  // if(edge_count > 0) {
+  //   points[0].UpdateTime(points[0].GetTime() - wait_time);
+  // }
 
   return points;
 }
 
 void BusStopMap::BuildPathGraph() {
-  for(const auto& [bus, route] : buses) {
-    stopsXbuses += route.GetStopsCount();
-  }
-
-  for(const auto& stop : stops) {
-    if(stop.second.size() > 1) {
-      stopsXbuses += 1;
-    }
-  }
-
+  CountRequiredVertexes();
   path_graph = std::make_unique<Graph::DirectedWeightedGraph<Weight>>(stopsXbuses);
 
   Graph::VertexId vertex_to = 0;
@@ -88,9 +84,9 @@ void BusStopMap::BuildPathGraph() {
   for(const auto& [bus, route] : buses) {
     
     const auto& route_stops = route.GetStopsOnRoute();
-  
     /* Previous stop to exclude calcualtion on the same stops in one route */
     auto prev_stop = *route_stops.begin();
+    bool isFirstStop = true;
 
     /* for each bus's route itterate on all stops it has*/
     for(const auto& stop : route_stops) {
@@ -99,15 +95,29 @@ void BusStopMap::BuildPathGraph() {
       auto stop_vertex_it = stops_vertexes.find(stop->GetName());
       if(stop_vertex_it != stops_vertexes.end()) {
         /* The stop and its vertex was parsed within parsing previous route */
+        if(stop_vertex_it->second.size() == 1) {
+          /* Insert wait vertex */
+          auto temp_vertex = stop_vertex_it->second[0];
+          stop_vertex_it->second[0] = vertex_to;
+          stop_vertex_it->second.push_back(temp_vertex);
+          stop_route_ids.insert({vertex_to, {stop->GetName(), wait_stop}});
+          vertex_to++;
+          
+          Weight weight(wait_time / 2, &bus.GetNumber());
+          Graph::Edge<Weight> edge = {stop_vertex_it->second[0],
+                                      temp_vertex,
+                                      weight};
+          path_graph->AddEdge(edge);
+          edge = {temp_vertex, stop_vertex_it->second[0], weight};
+          path_graph->AddEdge(edge);
+        }
         stop_vertex_it->second.push_back(vertex_to);
 
         Weight weight(wait_time / 2, &bus.GetNumber());
-
         Graph::Edge<Weight> edge = {stop_vertex_it->second[0],
                                     vertex_to,
                                     weight};
         path_graph->AddEdge(edge);
-
         edge = {vertex_to, stop_vertex_it->second[0], weight};
         path_graph->AddEdge(edge);
       } else {
@@ -138,7 +148,7 @@ void BusStopMap::BuildPathGraph() {
       stop_route_ids.insert({vertex_to, {stop->GetName(), bus.GetNumber()}});
 
       /* Calculate weight for all segments in a route */
-      if(prev_stop != stop) {
+      if(!isFirstStop) {
         auto distance = GetDistance(prev_stop, stop);
         if(route.IsOneDirection()) {
           /* Add vertex in forward direction for round route */
@@ -166,6 +176,8 @@ void BusStopMap::BuildPathGraph() {
                                            weight};
           path_graph->AddEdge(back_edge);
         }
+      } else {
+        isFirstStop = false;
       }
       prev_stop = stop;
 
@@ -176,6 +188,22 @@ void BusStopMap::BuildPathGraph() {
   /* Check if it was round */
   }
   path_router = std::make_unique<Graph::Router<Weight>>(*path_graph);
+}
+
+void BusStopMap::CountRequiredVertexes() {
+  for(const auto& [bus, route] : buses) {
+    auto stops = route.GetStopsCount();
+    auto unique_stops = route.GetUniqueStopsCount();
+    stopsXbuses += stops;
+    /* Include cross-references */
+    stopsXbuses += (stops - unique_stops);
+  }
+
+  for(const auto& stop : stops) {
+    if(stop.second.size() > 1) {
+      stopsXbuses += 1;
+    }
+  }
 }
 
 size_t BusStopMap::GetBusesCountOnStop(const std::string& stop, std::optional<BusStop> stop_id) {

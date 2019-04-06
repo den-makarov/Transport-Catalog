@@ -145,6 +145,7 @@ public:
 private:
   size_t GetBusesCountOnStop(const std::string& stop, std::optional<BusStop> stop_id);
   void BuildPathGraph();
+  void CountRequiredVertexes();
   BusRoute::Distance GetDistance(BusRoute::BusStopId from, BusRoute::BusStopId to);
   Results ParseOptimalPath(const Graph::Router<Weight>::RouteInfo& result,
                                            double weight) const;
