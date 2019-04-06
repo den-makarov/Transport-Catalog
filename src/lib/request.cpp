@@ -257,8 +257,6 @@ string RouteInfoRequest::Process(const BusStopMap& map) const {
 
         /* Print postponed bus */
         if(idx != 1) {
-          //"span_count": 2,
-          //"time": 5.235
           result << spaces << spaces << spaces << "\"span_count\": " << spans << ",\n";
           result << spaces << spaces << spaces << "\"time\": "
                  << fixed << setprecision(6)

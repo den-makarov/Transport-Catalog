@@ -24,17 +24,12 @@ public:
   struct Weight
   {
     double weight;
-    double wait;
     const std::string * bus_number;
     
     Weight operator+(const Weight& other) const {
       Weight new_weight(weight + other.weight, 
-                        wait,
                         other.bus_number);
 
-      if(bus_number != other.bus_number) {
-        new_weight.weight += wait;
-      }
       return new_weight;
     }
 
@@ -50,22 +45,20 @@ public:
       return weight >= value;
     }
 
-    Weight(double val, double w, const std::string* str)
+    Weight(double val, const std::string * str)
     : weight(val)
-    , wait(w)
     , bus_number(str)
     {}
 
     Weight(double val) 
     : weight(val)
-    , wait(0.0)
     , bus_number(nullptr)
     {}
   };
 
   BusStopMap() {}
 
-  enum class Type {
+  enum class ActivityType {
     STOP,
     BUS,
     TOTAL_TIME
@@ -73,7 +66,7 @@ public:
 
   class RoutePoint {
   public:
-    RoutePoint(BusStopMap::Type t, const std::string& n, double weight)
+    RoutePoint(BusStopMap::ActivityType t, const std::string& n, double weight)
       : type(t)
       , name(n)
       , time(weight)
@@ -92,10 +85,10 @@ public:
     }
 
     bool IsStop() const {
-      return type == Type::STOP;
+      return type == ActivityType::STOP;
     }
   private:
-    BusStopMap::Type type;
+    BusStopMap::ActivityType type;
     const std::string& name;
     double time;
   };
@@ -150,6 +143,7 @@ public:
   }
   Results GetOptimalPath(const std::string& stop_from, const std::string& stop_to) const;
 private:
+  size_t GetBusesCountOnStop(const std::string& stop, std::optional<BusStop> stop_id);
   void BuildPathGraph();
   BusRoute::Distance GetDistance(BusRoute::BusStopId from, BusRoute::BusStopId to);
   Results ParseOptimalPath(const Graph::Router<Weight>::RouteInfo& result,
@@ -162,12 +156,13 @@ private:
   double wait_time;
   size_t stopsXbuses = 0;
 
-  std::unordered_map<Graph::VertexId, const std::string&> stop_route_ids;
-  std::unordered_map<std::string, Graph::VertexId> stops_vertexes;
+  std::unordered_map<Graph::VertexId, std::pair<const std::string&, const std::string&>> stop_route_ids;
+  std::unordered_map<std::string, std::vector<Graph::VertexId>> stops_vertexes;
   
   std::unique_ptr<Graph::DirectedWeightedGraph<Weight>> path_graph;
   std::unique_ptr<Graph::Router<Weight>> path_router;
   mutable std::vector<std::optional<Graph::Router<Weight>::RouteInfo>> optimal_routes;
+  const std::string wait_stop = "wait_stop";
 };
 
 #endif // BUSSTOPMAP_H
