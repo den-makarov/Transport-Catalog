@@ -89,18 +89,15 @@ BusStopMap::Results BusStopMap::ParseOptimalPath(const Graph::Router<Weight>::Ro
 }
 
 void BusStopMap::BuildPathGraph() {
-  // for(const auto& stop : stops) {
-  //   stopsXbuses += stop.second.size();
-  //   /* It is a stop with two or more buses. 
-  //      Reserve vertex for changing buses */
-  //   if(stop.second.size() > 1) {
-  //     stopsXbuses += 1;
-  //   }
-  // }
   for(const auto& [bus, route] : buses) {
     stopsXbuses += route.GetStopsCount();
   }
-  stopsXbuses *= 2;
+
+  for(const auto& stop : stops) {
+    if(stop.second.size() > 1) {
+      stopsXbuses += 1;
+    }
+  }
 
   path_graph = std::make_unique<Graph::DirectedWeightedGraph<Weight>>(stopsXbuses);
 
