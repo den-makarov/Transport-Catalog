@@ -69,7 +69,7 @@ BusStopMap::Results BusStopMap::ParseOptimalPath(const Graph::Router<Weight>::Ro
   // if(edge_count > 0) {
   //   points[0].UpdateTime(points[0].GetTime() - wait_time);
   // }
-
+  path_router->ReleaseRoute(result.id);
   return points;
 }
 
