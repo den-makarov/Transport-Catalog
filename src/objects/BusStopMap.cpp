@@ -10,7 +10,7 @@ BusStopMap::Results BusStopMap::GetOptimalPath(const std::string &stop_from,
        && to_stop_it != stops_vertexes.end()) {
       auto result = path_router->BuildRoute(from_stop_it->second[0],
                                             to_stop_it->second[0]);
-      optimal_routes.push_back(result);
+      //optimal_routes.push_back(result);
 
       if(result) {
         return ParseOptimalPath(result.value(),
@@ -40,20 +40,20 @@ BusStopMap::Results BusStopMap::ParseOptimalPath(const Graph::Router<Weight>::Ro
         BusStopMap::RoutePoint stop(BusStopMap::ActivityType::STOP,
                                     stop_from_it->second.first,
                                     wait_time);
-        points.push_back(std::move(stop));
+        points.push_back(stop);
       } else if ( stop_to_it->second.second != wait_stop ) {
         if(idx == 0) {
           BusStopMap::RoutePoint stop(BusStopMap::ActivityType::STOP,
                                       stop_from_it->second.first,
                                       wait_time);
-          points.push_back(std::move(stop));
+          points.push_back(stop);
           points[0].UpdateTime(points[0].GetTime() + wait_time);
         }
         
         BusStopMap::RoutePoint stop(BusStopMap::ActivityType::BUS,
                                     stop_from_it->second.second,
                                     edge.weight.weight);
-        points.push_back(std::move(stop));
+        points.push_back(stop);
         
         if(idx == edge_count - 1) {
           points[0].UpdateTime(points[0].GetTime() + wait_time / 2);

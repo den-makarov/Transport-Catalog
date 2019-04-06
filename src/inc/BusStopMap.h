@@ -161,7 +161,7 @@ private:
   
   std::unique_ptr<Graph::DirectedWeightedGraph<Weight>> path_graph;
   std::unique_ptr<Graph::Router<Weight>> path_router;
-  mutable std::vector<std::optional<Graph::Router<Weight>::RouteInfo>> optimal_routes;
+  //mutable std::vector<std::optional<Graph::Router<Weight>::RouteInfo>> optimal_routes;
   const std::string wait_stop = "wait_stop";
 };
 
