@@ -60,26 +60,6 @@ BusStopMap::Results BusStopMap::ParseOptimalPath(const Graph::Router<Weight>::Ro
         }
       }
     }
-    // auto current_bus = edge.weight.bus_number;
-
-    // if(current_bus != previous_bus) {
-    //   /* It was new bus. Add in responces information about stop */
-    //   auto stop_from_it = stop_route_ids.find(edge.from);
-    //   if(stop_from_it != stop_route_ids.end()) {
-    //     const auto& stop_from = stop_from_it->second;
-
-    //     BusStopMap::RoutePoint stop(BusStopMap::Type::STOP,
-    //                                 stop_from,
-    //                                 wait_time);
-    //     points.push_back(std::move(stop));
-    //   }
-    // }
-
-    // BusStopMap::RoutePoint bus(BusStopMap::Type::BUS,
-    //                            *edge.weight.bus_number,
-    //                            edge.weight.weight);
-    // points.push_back(std::move(bus));
-    // previous_bus = current_bus;
   }
   if(edge_count > 0) {
     points[0].UpdateTime(points[0].GetTime() - wait_time / 2);

@@ -74,7 +74,6 @@ void RouteDefRequest::ParseFrom(const std::map<std::string, Json::Node>& request
   const auto dir_it = request.find("is_roundtrip");
   if(dir_it != request.end()) {
     if(dir_it->second.index() == BOOL_NODE) {
-      /* @TODO: Define string to bool parses and dedicated json type */
       one_direction = dir_it->second.AsBool();
     }
   }
@@ -279,8 +278,6 @@ string RouteInfoRequest::Process(const BusStopMap& map) const {
                << optimal_route[idx].GetTime() << "\n";
         result << spaces << spaces << "},\n";
       } else {
-        //"type": "Bus",
-        //"bus": "297",
         if(was_stop) {
           /* new bus */
           result << spaces << spaces << "{\n";
@@ -296,8 +293,6 @@ string RouteInfoRequest::Process(const BusStopMap& map) const {
         was_stop = false;
 
         if(idx == optimal_route.size() - 1) {
-          //"span_count": 2,
-          //"time": 5.235
           result << spaces << spaces << spaces << "\"span_count\": " << spans << ",\n";
           result << spaces << spaces << spaces << "\"time\": "
                  << fixed << setprecision(6)
