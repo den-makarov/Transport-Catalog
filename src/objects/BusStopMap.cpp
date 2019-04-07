@@ -58,7 +58,7 @@ void BusStopMap::BuildPathGraph() {
   auto vertexes_count = CountRequiredVertexes();
   FillVertexes(vertexes_count);
   path_graph = std::make_unique<Graph::DirectedWeightedGraph<Weight>>(vertexes_count * 2);
-
+  Graph::EdgeId edge_id = 0;
   for(const auto& [bus, route] : buses) {
     const auto& route_stops = route.GetStopsOnRoute();
 
@@ -68,18 +68,20 @@ void BusStopMap::BuildPathGraph() {
       /* Add edge to wait stop */
       Graph::VertexId vertex_to = vertex_from + 1;
       Graph::Edge<Weight> edge = {vertex_from, vertex_to, wait_time};
-      edges_buses_array[path_graph->AddEdge(edge)] = {&wait_stop, 0};
+      edge_id = path_graph->AddEdge(edge);
+      edges_buses_array[edge_id] = {&wait_stop, 0};
       
       /* Add edges to all next stops */
       vertex_from = vertex_to;
       auto prev_stop_it = stop;
       BusRoute::Distance distance = {0, 0};
       size_t span_count = 1;
+      
       for(auto stop_it = std::next(stop); stop_it != route_stops.end(); ++stop_it) {
         distance += GetDistance(*prev_stop_it, *stop_it);
         prev_stop_it = stop_it;
         vertex_to = 2 * stops_vertexes_map.at(stop_it.operator*()->GetName());
-        
+
         if(route.IsOneDirection()) {
           /* Add vertex in forward direction for round route */
           double w = distance.forward != 0
@@ -87,20 +89,22 @@ void BusStopMap::BuildPathGraph() {
               : distance.back / velocity;
           Weight weight(w);
           Graph::Edge<Weight> edge = {vertex_from, vertex_to, w};
-          edges_buses_array[path_graph->AddEdge(edge)] = {&bus.GetNumber(), span_count};
+          edge_id = path_graph->AddEdge(edge);
+          edges_buses_array[edge_id] = {&bus.GetNumber(), span_count};
         } else {
           /* Add vertex in forward direction for ordinary route */
           double forward_w = distance.forward / velocity;
           Weight weight(forward_w);
           Graph::Edge<Weight> forward_edge = {vertex_from, vertex_to, weight};
-          edges_buses_array[path_graph->AddEdge(forward_edge)] = {&bus.GetNumber(), span_count};
+          edge_id = path_graph->AddEdge(forward_edge);
+          edges_buses_array[edge_id] = {&bus.GetNumber(), span_count};
 
           /* Add vertex in back direction for ordinary route */
           weight = distance.back / velocity;
           Graph::Edge<Weight> back_edge = {vertex_to + 1, vertex_from - 1, weight};
-          edges_buses_array[path_graph->AddEdge(back_edge)] = {&bus.GetNumber(), span_count};
+          edge_id = path_graph->AddEdge(back_edge);
+          edges_buses_array[edge_id] = {&bus.GetNumber(), span_count};
         }
-
         span_count++;
       }
     }    
@@ -120,7 +124,7 @@ size_t BusStopMap::CountRequiredVertexes() {
 }
 
 void BusStopMap::FillVertexes(size_t count) {
-  edges_buses_array.resize(count * count * 4, {nullptr, 0});
+  edges_buses_array.resize(count * count * count, {nullptr, 0});
   vertexes_stops_array.reserve(count);
   stops_vertexes_map.reserve(count);
 
