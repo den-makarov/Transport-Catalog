@@ -116,7 +116,7 @@ size_t BusStopMap::CountRequiredVertexes() {
   size_t stopsXbuses = 0;
 
   for(const auto& stop : stops) {
-    if(stop.second.size() > 0) {
+    if(stop.second.size() >= 0) {
       stopsXbuses++;
     }
   }
@@ -124,13 +124,13 @@ size_t BusStopMap::CountRequiredVertexes() {
 }
 
 void BusStopMap::FillVertexes(size_t count) {
-  edges_buses_array.resize(count * count * count, {nullptr, 0});
-  vertexes_stops_array.reserve(count);
-  stops_vertexes_map.reserve(count);
+  edges_buses_array.resize(count * count * count * 8, {nullptr, 0});
+  vertexes_stops_array.reserve(count * 2);
+  stops_vertexes_map.reserve(count * 2);
 
   Graph::VertexId idx = 0;
   for(const auto& stop : stops) {
-    if(stop.second.size() > 0) {
+    if(stop.second.size() >= 0) {
       vertexes_stops_array[idx] = &stop.first.GetName();
       stops_vertexes_map[stop.first.GetName()] = idx++;
     }
