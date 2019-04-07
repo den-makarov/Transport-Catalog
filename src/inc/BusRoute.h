@@ -21,6 +21,15 @@ public:
   struct Distance {
     unsigned long forward;
     unsigned long back;
+    Distance operator+(const Distance& other) const {
+      return {forward + other.forward, back + other.back};
+    }
+
+    Distance& operator+=(const Distance& other) {
+      forward += other.forward;
+      back += other.back;
+      return *this;
+    }
   };
 
   struct RouteParams {

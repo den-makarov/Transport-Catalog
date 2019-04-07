@@ -20,56 +20,62 @@ public:
   using RouteId = std::unordered_map<Bus, BusRoute, BusHasher>::iterator;
   using ConstRouteId = std::unordered_map<Bus, BusRoute, BusHasher>::const_iterator;
   using Results = std::vector<RoutePoint>;
-
-  struct Weight
-  {
-    double weight;
-    const std::string * bus_number;
-    
-    Weight operator+(const Weight& other) const {
-      Weight new_weight(weight + other.weight, 
-                        other.bus_number);
-
-      return new_weight;
-    }
-
-    bool operator<(const Weight& other) const {
-      return weight < other.weight;
-    }
-
-    bool operator>(const Weight& other) const {
-      return weight > other.weight;
-    }
-
-    bool operator>=(double value) const {
-      return weight >= value;
-    }
-
-    Weight(double val, const std::string * str)
-    : weight(val)
-    , bus_number(str)
-    {}
-
-    Weight(double val) 
-    : weight(val)
-    , bus_number(nullptr)
-    {}
-  };
-
-  BusStopMap() {}
+  using Weight = double;
 
   enum class ActivityType {
     STOP,
     BUS,
-    TOTAL_TIME
+    TOTAL_TIME,
+    NONE
   };
+
+  // struct Weight
+  // {
+  //   double weight;
+  //   const std::string * bus_number;
+  //   ActivityType type = ActivityType::NONE;
+
+  //   Weight operator+(const Weight& other) const {
+  //     Weight new_weight(weight + other.weight, 
+  //                       other.bus_number, other.type);
+
+  //     return new_weight;
+  //   }
+
+  //   bool operator<(const Weight& other) const {
+  //     return weight < other.weight;
+  //   }
+
+  //   bool operator>(const Weight& other) const {
+  //     return weight > other.weight;
+  //   }
+
+  //   bool operator>=(double value) const {
+  //     return weight >= value;
+  //   }
+
+  //   Weight(double val, const std::string * str, ActivityType t)
+  //   : weight(val)
+  //   , bus_number(str)
+  //   , type(t)
+  //   {}
+
+  //   Weight(double val) 
+  //   : weight(val)
+  //   , bus_number(nullptr)
+  //   , type(ActivityType::NONE)
+  //   {}
+  // };
+
+  BusStopMap() {}
 
   class RoutePoint {
   public:
-    RoutePoint(BusStopMap::ActivityType t, const std::string& n, double weight)
+    RoutePoint(BusStopMap::ActivityType t, const std::string& n, double weight, size_t s)
       : type(t)
       , name(n)
       , time(weight)
+      , spans(s)
     {}
 
     const std::string& GetName() const {
@@ -78,6 +84,10 @@ public:
 
     double GetTime() const {
       return time;
+    }
+
+    size_t GetSpans() const {
+      return spans;
     }
 
     void UpdateTime(double t) {
@@ -91,6 +101,7 @@ public:
     BusStopMap::ActivityType type;
     const std::string& name;
     double time;
+    size_t spans;
   };
 
   void AddSettings(double new_velocity, int new_wait_time) {
@@ -143,9 +154,10 @@ public:
   }
   Results GetOptimalPath(const std::string& stop_from, const std::string& stop_to) const;
 private:
-  size_t GetBusesCountOnStop(const std::string& stop, std::optional<BusStop> stop_id);
+  size_t GetBusesCountOnStop(std::optional<BusStop> stop_id);
   void BuildPathGraph();
-  void CountRequiredVertexes();
+  void FillVertexes(size_t count);
+  size_t CountRequiredVertexes();
   BusRoute::Distance GetDistance(BusRoute::BusStopId from, BusRoute::BusStopId to);
   Results ParseOptimalPath(const Graph::Router<Weight>::RouteInfo& result,
                                            double weight) const;
@@ -157,8 +169,9 @@ private:
   double wait_time;
   size_t stopsXbuses = 0;
 
-  std::unordered_map<Graph::VertexId, std::pair<const std::string&, const std::string&>> stop_route_ids;
-  std::unordered_map<std::string, std::vector<Graph::VertexId>> stops_vertexes;
+  std::vector<std::pair<const std::string *, size_t>> edges_buses_array;
+  std::vector<const std::string *> vertexes_stops_array;
+  std::unordered_map<std::string, Graph::VertexId> stops_vertexes_map;
   
   std::unique_ptr<Graph::DirectedWeightedGraph<Weight>> path_graph;
   std::unique_ptr<Graph::Router<Weight>> path_router;

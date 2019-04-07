@@ -6,13 +6,17 @@
     {
       "label": "run",
       "type": "shell",
-      "command": "./build/application < tests/task_E/transport-output2.json",
+      "command": "./build/application",
+      "args": [
+        "<",
+        "tests/task_E/transport-input4.json"
+      ],
       "problemMatcher": []
     },
     {
       "label": "build",
       "type": "shell",
-      "command": "cd build && cmake .. && make -j $(nproc)",
+      "command": "rm -r build/* && cd build && cmake .. && make -j $(nproc)",
       "problemMatcher": []
     }
   ]

@@ -38,7 +38,9 @@
     "iomanip": "cpp",
     "variant": "cpp",
     "ctime": "cpp",
-    "deque": "cpp"
+    "deque": "cpp",
+    "chrono": "cpp",
+    "ratio": "cpp"
   },
   "C_Cpp.configurationWarnings": "Disabled",
   "C_Cpp.default.cppStandard": "c++17"
